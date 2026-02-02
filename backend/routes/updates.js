@@ -23,6 +23,15 @@ router.get("/", async (req, res) => {
   } catch (err) {
     res.status(500).json({error: "Error fetching updates"});
   }
-})
+});
+
+router.delete("/clear", auth, async (req, res) => {
+  try {
+    await Update.deleteMany({});
+    res.status(204).json({message: "Updates cleared"});
+  } catch (err) {
+    res.status(500).json({error: "Error clearing updates"});
+  }
+});
 
 module.exports = router;

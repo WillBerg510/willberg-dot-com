@@ -82,6 +82,19 @@ function App() {
     verify();
   }
 
+  const clearUpdates = () => {
+    fetch(`${BACKEND}/updates/clear`).then(res => {
+      if (!res.ok) {
+        throw new Error(`Response status ${res.status}`);
+      }
+      return res.json();
+    }).then(data => {
+      getUpdates();
+    }).catch(error => {
+      alert(error);
+    });
+  }
+
   return (
     <>
       {isAdmin &&
@@ -105,6 +118,9 @@ function App() {
           <h3>{update.date}</h3>
         </div>
       )}
+      {isAdmin &&
+        <button onChange={clearUpdates}>Delete updates</button>
+      }
     </>
   )
 }
