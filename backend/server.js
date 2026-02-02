@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const updatesRouter = require("./routes/updates.js");
+const loginRouter = require("./routes/login.js");
 
 require("dotenv").config();
 
@@ -19,7 +20,8 @@ mongoose.connect(process.env.MONGO_URI)
 
 app.use(cors());
 app.use(express.json());
-app.use('/updates', updatesRouter)
+app.use('/updates', updatesRouter);
+app.use('/login', loginRouter);
 
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

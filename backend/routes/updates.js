@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Update = require("../models/Update.js");
+const auth = require("../utils/auth.js");
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   const {text, date} = req.body;
   try {
     const newUpdate = await Update.create({
