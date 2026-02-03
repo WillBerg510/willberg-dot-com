@@ -97,7 +97,7 @@ function App() {
   }
 
   return (
-    <>
+    <div id="app">
       {isAdmin &&
         <div>
           <h2>Logged in as admin</h2>
@@ -105,18 +105,18 @@ function App() {
         </div>
       }
       <h1>WELCOME TO THE WILL BERG WEBSITE</h1>
-      <h3>THE PLACE TO BE</h3>
-      <h5>Glad you could make it</h5>
+      <h2>THE PLACE TO BE</h2>
+      <h3>Glad you could make it</h3>
       {isAdmin &&
         <div id="enterUpdate">
           <textarea onChange={changeUpdate} cols="50" rows="5" value={update} />
-          <button onClick={postUpdate}>Post an update</button>
+          <button id="postUpdate" onClick={postUpdate}>Post an update</button>
         </div>
       }
       {updates.toReversed().map((update, i) =>
         <div index={i} class="update">
           <h2 class="updateText">{update.text}</h2>
-          <p>{update.date.toLocaleString("en-US", {
+          <p class="updateDate">{update.date.toLocaleString("en-US", {
             month: "long",
             day: "numeric",
             year: "numeric",
@@ -129,7 +129,7 @@ function App() {
       {isAdmin &&
         <button onClick={clearUpdates}>Delete updates</button>
       }
-    </>
+    </div>
   )
 }
 
