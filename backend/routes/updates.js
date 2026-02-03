@@ -25,7 +25,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/one/:id", auth, async (req, res) => {
   try {
     const update = await Update.findOneAndDelete({
       _id: req.params.id,

@@ -80,7 +80,7 @@ function App() {
   }
 
   const deleteUpdate = (_id) => {
-    fetch(`${BACKEND}/updates/${_id}`, {
+    fetch(`${BACKEND}/updates/one/${_id}`, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
