@@ -3,10 +3,24 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  width: 50%;
 }
 
 .update {
   background-color: white;
   padding: 5px;
   margin: 10px;
+}
+
+.updateText {
+  white-space: pre-wrap;
+}
+
+textarea {
+  resize: none;
+}
+
+#enterUpdate {
+  display: flex;
+  flex-direction: column;
 }

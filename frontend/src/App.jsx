@@ -73,12 +73,6 @@ function App() {
     setUpdate(e.target.value);
   }
 
-  const inputKeyDown = (e) => {
-    if (e.key === "Enter") {
-      postUpdate();
-    }
-  }
-
   const signOut = () => {
     localStorage.removeItem("auth_token");
     getUpdates();
@@ -114,22 +108,22 @@ function App() {
       <h3>THE PLACE TO BE</h3>
       <h5>Glad you could make it</h5>
       {isAdmin &&
-        <div>
-          <input onChange={changeUpdate} value={update} onKeyDown={inputKeyDown}/>
+        <div id="enterUpdate">
+          <textarea onChange={changeUpdate} cols="50" rows="5" value={update} />
           <button onClick={postUpdate}>Post an update</button>
         </div>
       }
       {updates.toReversed().map((update, i) =>
         <div index={i} class="update">
-          <h2>{update.text}</h2>
-          <h3>{update.date.toLocaleString("en-US", {
+          <h2 class="updateText">{update.text}</h2>
+          <p>{update.date.toLocaleString("en-US", {
             month: "long",
             day: "numeric",
             year: "numeric",
             hour: "numeric",
             minute: "numeric",
             hour12: true,
-          })}</h3>
+          })}</p>
         </div>
       )}
       {isAdmin &&
