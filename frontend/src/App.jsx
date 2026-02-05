@@ -59,9 +59,27 @@ function App() {
     });
   };
 
+  const refresh = () => {
+    fetch(`${BACKEND}/login/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: 'include',
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error status: ${res.status}`);
+      }
+      return res.json();
+    }).then(data => {
+      setIsAdmin(data.token != "n/a")
+    }).catch(() => {
+      setIsAdmin(false);
+    });
+  }
+
   const verify = () => {
     fetch(`${BACKEND}/login/verify`, {
-      method: "HEAD",
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
       },
@@ -69,8 +87,11 @@ function App() {
       if (!res.ok) {
         throw new Error(`Response status ${res.status}`);
       }
-      setIsAdmin(true);
-    }).catch(error => {
+      return res.json();
+    }).then(data => {
+      setIsAdmin(data.admin);
+      refresh();
+    }).catch(() => {
       setIsAdmin(false);
     })
   }
@@ -86,8 +107,20 @@ function App() {
 
   const signOut = () => {
     localStorage.removeItem("auth_token");
+    fetch(`${BACKEND}/login/signout`, {
+      method: "POST",
+      credentials: "include",
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error(`Response status ${res.status}`);
+      }
+      return res.json();
+    }).catch(error => {
+      console.log(error);
+    });
     getUpdates();
-    verify();
+    setIsAdmin(false);
+    //verify();
   }
 
   const toggleReaction = (update, reaction) => {

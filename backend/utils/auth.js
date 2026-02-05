@@ -6,7 +6,7 @@ const auth = (req, res, next) => {
     return res.status(401).json({error: 'Missing auth token.'});
   }
   try {
-    jwt.verify(token, process.env.TOKEN);
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
     next();
   } catch {
     return res.status(401).json({error: 'Invalid auth token.'});

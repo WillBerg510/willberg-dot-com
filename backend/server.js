@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieparser = require('cookie-parser');
 
 const updatesRouter = require("./routes/updates.js");
 const loginRouter = require("./routes/login.js");
@@ -21,6 +22,7 @@ mongoose.connect(process.env.MONGO_URI)
 if (process.env.DEV_MODE) {
     app.use(cors({
         origin: 'http://localhost:5173',
+        credentials: true,
     }));
 }
 else {
@@ -29,6 +31,8 @@ else {
     }))
 }
 app.use(express.json());
+app.use(cookieparser());
+app.use(express.urlencoded({ extended: false }));
 app.use('/updates', updatesRouter);
 app.use('/login', loginRouter);
 

@@ -26,6 +26,7 @@ const Login = () => {
       body: JSON.stringify({
         password: password,
       }),
+      credentials: 'include',
     }).then(res => {
       if (!res.ok) {
         throw new Error(`HTTP error status: ${res.status}`);
