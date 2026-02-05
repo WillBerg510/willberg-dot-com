@@ -1,0 +1,1 @@
+This repository contains both the frontend and backend for https://willbergforever.com. The frontend is hosted through Netlify, and the backend is hosted through Render at https://server.willbergforever.com.
