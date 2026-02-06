@@ -36,7 +36,6 @@ router.get("/", cors(), async (req, res) => {
     }
     res.status(200).json({updates});
   } catch (err) {
-    console.log(err);
     res.status(500).json({error: "Error fetching updates"});
   }
 });
