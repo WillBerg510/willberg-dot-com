@@ -52,7 +52,6 @@ function App() {
       data.updates.forEach((update) => {
         update.date = new Date(update.date);
       });
-      console.log(data.updates);
       setUpdates(data.updates);
     }).catch(error => {
       alert(error);
@@ -79,7 +78,7 @@ function App() {
     });
   }
 
-  const verify = () => {
+  const adminVerify = () => {
     fetch(`${BACKEND}/admin/verify`, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
@@ -94,6 +93,26 @@ function App() {
       refresh();
     }).catch(() => {
       setIsAdmin(false);
+    })
+  }
+
+  const userVerify = () => {
+    fetch(`${BACKEND}/user/verify`, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("user_auth_token")}`,
+      }
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error(`Response status ${res.status}`);
+      }
+      return res.json();
+    }).then(data => {
+      if (data.valid) {
+        getUpdates();
+      }
+      userRefresh();
+    }).catch(error => {
+      console.log(error);
     })
   }
 
@@ -136,13 +155,8 @@ function App() {
   }
 
   useEffect(() => {
-    if (!localStorage.getItem("user_auth_token")) {
-      userRefresh();
-    }
-    else {
-      getUpdates();
-    }
-    verify();
+    userVerify();
+    adminVerify();
   }, []);
 
   const changeUpdate = (e) => {

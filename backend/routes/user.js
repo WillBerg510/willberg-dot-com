@@ -2,6 +2,16 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
+router.get("/verify", async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  try {
+    jwt.verify(token, process.env.USER_ACCESS_TOKEN_SECRET);
+    res.status(200).json({valid: true});
+  } catch (err) {
+    res.status(200).json({valid: false});
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const userId = crypto.randomUUID();
