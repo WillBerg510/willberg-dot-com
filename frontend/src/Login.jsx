@@ -18,7 +18,7 @@ const Login = () => {
   }
 
   const login = () => {
-    fetch(`${BACKEND}/login`, {
+    fetch(`${BACKEND}/admin/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

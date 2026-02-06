@@ -11,7 +11,7 @@ const update = new mongoose.Schema({
   },
   reactions: {
     type: Map,
-    of: Number,
+    of: Array,
     required: true,
   }
 });

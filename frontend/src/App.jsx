@@ -6,7 +6,7 @@ function App() {
   const [update, setUpdate] = useState("");
   const [updates, setUpdates] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
-
+  
   const reactions = {
     "heart": "❤️",
     "fire": "🔥",
@@ -39,7 +39,11 @@ function App() {
   };
 
   const getUpdates = () => {
-    fetch(`${BACKEND}/updates`).then(res => {
+    fetch(`${BACKEND}/updates`, {
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("user_auth_token")}`,
+      }
+    }).then(res => {
       if (!res.ok) {
         throw new Error(`Response status ${res.status}`);
       }
@@ -47,12 +51,8 @@ function App() {
     }).then(data => {
       data.updates.forEach((update) => {
         update.date = new Date(update.date);
-        update.reacted = {
-          "heart": false,
-          "fire": false,
-          "surprise": false,
-        };
       });
+      console.log(data.updates);
       setUpdates(data.updates);
     }).catch(error => {
       alert(error);
@@ -60,7 +60,7 @@ function App() {
   };
 
   const refresh = () => {
-    fetch(`${BACKEND}/login/refresh`, {
+    fetch(`${BACKEND}/admin/refresh`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,17 +72,18 @@ function App() {
       }
       return res.json();
     }).then(data => {
-      setIsAdmin(data.token != "n/a")
+      setIsAdmin(data.token != "n/a");
+      if (data.token != "n/a") localStorage.setItem("auth_token", data.token);
     }).catch(() => {
       setIsAdmin(false);
     });
   }
 
   const verify = () => {
-    fetch(`${BACKEND}/login/verify`, {
+    fetch(`${BACKEND}/admin/verify`, {
       headers: {
         "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-      },
+      }
     }).then(res => {
       if (!res.ok) {
         throw new Error(`Response status ${res.status}`);
@@ -96,8 +97,47 @@ function App() {
     })
   }
 
+  const getUser = () => {
+    fetch(`${BACKEND}/user`, {
+      credentials: 'include',
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error(`Response status ${res.status}`);
+      }
+      return res.json();
+    }).then(data => {
+      localStorage.setItem("user_auth_token", data.token);
+      userRefresh();
+      getUpdates();
+    }).catch(error => {
+      console.log(error);
+    })
+  }
+
+  const userRefresh = () => {
+    fetch(`${BACKEND}/user/refresh`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: 'include',
+    }).then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error status: ${res.status}`);
+      }
+      return res.json();
+    }).then(data => {
+      if (data.token != "n/a") localStorage.setItem("user_auth_token", data.token);
+    }).catch(() => {});
+  }
+
   useEffect(() => {
-    getUpdates();
+    if (!localStorage.getItem("user_auth_token")) {
+      getUser();
+    }
+    else {
+      getUpdates();
+    }
     verify();
   }, []);
 
@@ -107,7 +147,7 @@ function App() {
 
   const signOut = () => {
     localStorage.removeItem("auth_token");
-    fetch(`${BACKEND}/login/signout`, {
+    fetch(`${BACKEND}/admin/signout`, {
       method: "POST",
       credentials: "include",
     }).then(res => {
@@ -120,7 +160,6 @@ function App() {
     });
     getUpdates();
     setIsAdmin(false);
-    //verify();
   }
 
   const toggleReaction = (update, reaction) => {
@@ -132,6 +171,7 @@ function App() {
         },
         body: JSON.stringify({
           reaction: reaction,
+          user_token: localStorage.getItem("user_auth_token"),
         })
       }).then(res => {
         if (!res.ok) {
@@ -148,6 +188,7 @@ function App() {
         },
         body: JSON.stringify({
           reaction: reaction,
+          user_token: localStorage.getItem("user_auth_token"),
         })
       }).then(res => {
         if (!res.ok) {
@@ -158,13 +199,13 @@ function App() {
       });
     }
     setUpdates(updates.map(up => {
-        if (update._id == up._id) {
-          var newReacted = up.reacted;
-          newReacted[reaction] = !up.reacted[reaction];
-          return {...up, reacted: newReacted}
-        }
-        else return up;
-      }));
+      if (update._id == up._id) {
+        var newReacted = up.reacted;
+        newReacted[reaction] = !up.reacted[reaction];
+        return {...up, reacted: newReacted}
+      }
+      else return up;
+    }));
   }
 
   const deleteUpdate = (_id) => {
@@ -240,7 +281,7 @@ function App() {
                   backgroundColor: update.reacted[reactionName] ? "lightgreen" : "lightgrey",
                 }}
                 onClick={() => toggleReaction(update, reactionName)}>
-                {reactionEmoji} {(update.reactions?.[reactionName] | 0) + update.reacted?.[reactionName]}
+                {reactionEmoji} {update.reactionNums[reactionName] + update.reacted?.[reactionName]}
               </button>
             )}
           </div>

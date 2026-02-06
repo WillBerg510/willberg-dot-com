@@ -3,6 +3,7 @@ const router = express.Router();
 const cors = require('cors');
 const Update = require("../models/Update.js");
 const auth = require("../utils/auth.js");
+const jwt = require('jsonwebtoken');
 
 router.post("/", auth, async (req, res) => {
   const {text, date} = req.body;
@@ -19,10 +20,23 @@ router.post("/", auth, async (req, res) => {
 });
 
 router.get("/", cors(), async (req, res) => {
+  const user_token = req.headers.authorization?.split(' ')[1];
   try {
-    const updates = await Update.find();
+    const updates = await Update.find().lean();
+    if (user_token) {
+      const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
+      updates.forEach(update => {
+        update.reacted = {};
+        update.reactionNums = {};
+        Object.entries(update.reactions).forEach(([reaction, users]) => {
+          update.reacted[reaction] = users.includes(decoded.user);
+          update.reactionNums[reaction] = users.length - users.includes(decoded.user);
+        })
+      });
+    }
     res.status(200).json({updates});
   } catch (err) {
+    console.log(err);
     res.status(500).json({error: "Error fetching updates"});
   }
 });
@@ -52,10 +66,11 @@ router.delete("/clear", auth, async (req, res) => {
 
 router.patch("/react/:id", async (req, res) => {
   try {
-    const {reaction} = req.body;
+    const {reaction, user_token} = req.body;
+    const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
     await Update.findOneAndUpdate(
       {_id: req.params.id},
-      {$inc: {[`reactions.${reaction}`]: 1}},
+      {$push: {[`reactions.${reaction}`]: decoded.user}},
     );
     res.status(204).json({message: `Reaction ${reaction} added`});
   } catch (err) {
@@ -65,10 +80,11 @@ router.patch("/react/:id", async (req, res) => {
 
 router.patch("/unreact/:id", async (req, res) => {
   try {
-    const {reaction} = req.body;
+    const {reaction, user_token} = req.body;
+    const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
     await Update.findOneAndUpdate(
       {_id: req.params.id},
-      {$inc: {[`reactions.${reaction}`]: -1}},
+      {$pull: {[`reactions.${reaction}`]: decoded.user}},
     );
     res.status(204).json({message: `Reaction ${reaction} removed`});
   } catch (err) {

@@ -2,13 +2,13 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-router.post("/", async (req, res) => {
+router.post("/login", async (req, res) => {
   const { password } = req.body;
   try {
     if (password != process.env.PASSWORD) {
       return res.status(401).json({error: "Incorrect password"});
     }
-    const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "4h"});
+    const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
     const refreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
@@ -27,7 +27,7 @@ router.post("/refresh", async (req, res) => {
   if (refreshToken) {
     try {
       jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
-      const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "4h"});
+      const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
       const newRefreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
       res.cookie('refresh_token', newRefreshToken, {
         httpOnly: true,
@@ -50,7 +50,7 @@ router.post("/signout", async (req, res) => {
     res.clearCookie('refresh_token');
   }
   res.status(200).json({message: "Signed out"});
-})
+});
 
 router.get("/verify", async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
