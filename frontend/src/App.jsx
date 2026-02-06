@@ -52,7 +52,6 @@ function App() {
       data.updates.forEach((update) => {
         update.date = new Date(update.date);
       });
-      console.log(data.updates);
       setUpdates(data.updates);
     }).catch(error => {
       alert(error);
@@ -133,7 +132,10 @@ function App() {
 
   useEffect(() => {
     if (!localStorage.getItem("user_auth_token")) {
-      getUser();
+      userRefresh();
+      if (!localStorage.getItem("user_auth_token")) {
+        getUser();
+      }
     }
     else {
       getUpdates();
