@@ -1,6 +1,7 @@
 import './App.css'
 import { useState, useEffect } from 'react';
 import { BACKEND } from "./config.js";
+import updatesAPI from "./api/UpdatesAPI.js";
 
 function App() {
   const [update, setUpdate] = useState("");
@@ -15,46 +16,19 @@ function App() {
 
   const postUpdate = () => {
     if (update != "") {
-      fetch(`${BACKEND}/updates`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-        },
-        body: JSON.stringify({
-          text: update,
-          date: Date.now(),
-        }),
-      }).then(res => {
-        if (!res.ok) {
-          throw new Error(`HTTP error status: ${res.status}`);
-        }
+      updatesAPI.postUpdate(localStorage.getItem("auth_token"), update).then(() => {
         getUpdates();
         setUpdate("");
-        return res.json();
-      }).catch(error => {
-        alert(error);
       });
     }
   };
 
   const getUpdates = () => {
-    fetch(`${BACKEND}/updates`, {
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("user_auth_token")}`,
-      }
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-      return res.json();
-    }).then(data => {
-      data.updates.forEach((update) => {
+    updatesAPI.getUpdates(localStorage.getItem("user_auth_token")).then(res => {
+      res.data.updates.forEach((update) => {
         update.date = new Date(update.date);
       });
-      setUpdates(data.updates);
-    }).catch(error => {
-      alert(error);
+      setUpdates(res.data.updates);
     });
   };
 
@@ -182,39 +156,9 @@ function App() {
 
   const toggleReaction = (update, reaction) => {
     if (update.reacted[reaction]) {
-      fetch(`${BACKEND}/updates/unreact/${update._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reaction: reaction,
-          user_token: localStorage.getItem("user_auth_token"),
-        })
-      }).then(res => {
-        if (!res.ok) {
-          throw new Error(`Response status ${res.status}`);
-        }
-      }).catch(error => {
-        alert(error);
-      });
+      updatesAPI.removeReaction(localStorage.getItem("user_auth_token"), update._id, reaction);
     } else {
-      fetch(`${BACKEND}/updates/react/${update._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          reaction: reaction,
-          user_token: localStorage.getItem("user_auth_token"),
-        })
-      }).then(res => {
-        if (!res.ok) {
-          throw new Error(`Response status ${res.status}`);
-        }
-      }).catch(error => {
-        alert(error);
-      });
+      updatesAPI.addReaction(localStorage.getItem("user_auth_token"), update._id, reaction);
     }
     setUpdates(updates.map(up => {
       if (update._id == up._id) {
@@ -227,36 +171,8 @@ function App() {
   }
 
   const deleteUpdate = (_id) => {
-    fetch(`${BACKEND}/updates/one/${_id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-      }
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-    }).then(() => {
+    updatesAPI.deleteUpdate(localStorage.getItem("auth_token"), _id).then(() => {
       getUpdates();
-    }).catch(error => {
-      alert(error);
-    });
-  }
-
-  const clearUpdates = () => {
-    fetch(`${BACKEND}/updates/clear`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-      }
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-    }).then(() => {
-      getUpdates();
-    }).catch(error => {
-      alert(error);
     });
   }
 
@@ -305,9 +221,6 @@ function App() {
           </div>
         </div>
       )}
-      {isAdmin &&
-        <button onClick={clearUpdates}>Delete updates</button>
-      }
     </div>
   )
 }
