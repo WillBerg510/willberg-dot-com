@@ -1,7 +1,8 @@
 import './App.css'
 import { useState, useEffect } from 'react';
-import { BACKEND } from "./config.js";
 import updatesAPI from "./api/UpdatesAPI.js";
+import adminAPI from "./api/AdminAPI.js";
+import userAPI from "./api/UserAPI.js";
 
 function App() {
   const [update, setUpdate] = useState("");
@@ -33,99 +34,44 @@ function App() {
   };
 
   const refresh = () => {
-    fetch(`${BACKEND}/admin/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: 'include',
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error status: ${res.status}`);
-      }
-      return res.json();
-    }).then(data => {
-      setIsAdmin(data.token != "n/a");
-      if (data.token != "n/a") localStorage.setItem("auth_token", data.token);
-    }).catch(() => {
-      setIsAdmin(false);
+    adminAPI.refresh().then(res => {
+      setIsAdmin(res.data.token != "n/a");
+      if (res.data.token != "n/a") localStorage.setItem("auth_token", res.data.token);
     });
   }
 
   const adminVerify = () => {
-    fetch(`${BACKEND}/admin/verify`, {
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("auth_token")}`,
-      }
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-      return res.json();
-    }).then(data => {
-      setIsAdmin(data.admin);
+    adminAPI.verify(localStorage.getItem("auth_token")).then(res => {
+      setIsAdmin(res.data.admin);
       refresh();
-    }).catch(() => {
-      setIsAdmin(false);
-    })
+    });
   }
 
   const userVerify = () => {
-    fetch(`${BACKEND}/user/verify`, {
-      headers: {
-        "Authorization": `Bearer ${localStorage.getItem("user_auth_token")}`,
-      }
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-      return res.json();
-    }).then(data => {
-      if (data.valid) {
+    userAPI.verify(localStorage.getItem("user_auth_token")).then(res => {
+      if (res.data.valid) {
         getUpdates();
       }
       userRefresh();
-    }).catch(error => {
-      console.log(error);
-    })
+    });
   }
 
   const getUser = () => {
-    fetch(`${BACKEND}/user`, {
-      credentials: 'include',
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-      return res.json();
-    }).then(data => {
-      localStorage.setItem("user_auth_token", data.token);
+    userAPI.getUser().then(res => {
+      localStorage.setItem("user_auth_token", res.data.token);
       userRefresh();
       getUpdates();
-    }).catch(error => {
-      console.log(error);
-    })
+    });
   }
 
   const userRefresh = () => {
-    fetch(`${BACKEND}/user/refresh`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: 'include',
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error status: ${res.status}`);
-      }
-      return res.json();
-    }).then(data => {
-      if (data.token != "n/a") {
-        localStorage.setItem("user_auth_token", data.token);
+    userAPI.refresh().then(res => {
+      if (res.data.token != "n/a") {
+        localStorage.setItem("user_auth_token", res.data.token);
         getUpdates();
       }
       else getUser();
-    }).catch(() => {});
+    });
   }
 
   useEffect(() => {
@@ -139,19 +85,10 @@ function App() {
 
   const signOut = () => {
     localStorage.removeItem("auth_token");
-    fetch(`${BACKEND}/admin/signout`, {
-      method: "POST",
-      credentials: "include",
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`Response status ${res.status}`);
-      }
-      return res.json();
-    }).catch(error => {
-      console.log(error);
+    adminAPI.signOut().then(() => {
+      setIsAdmin(false);
+      getUpdates();
     });
-    getUpdates();
-    setIsAdmin(false);
   }
 
   const toggleReaction = (update, reaction) => {

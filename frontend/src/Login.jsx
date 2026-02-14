@@ -1,6 +1,6 @@
-import { BACKEND } from "./config.js";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import adminAPI from "./api/AdminAPI.js";
 
 const Login = () => {
   const [password, setPassword] = useState("");
@@ -18,24 +18,8 @@ const Login = () => {
   }
 
   const login = () => {
-    fetch(`${BACKEND}/admin/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        password: password,
-      }),
-      credentials: 'include',
-    }).then(res => {
-      if (!res.ok) {
-        throw new Error(`HTTP error status: ${res.status}`);
-      }
-      return res.json();
-    }).catch(error => {
-      alert(error);
-    }).then(data => {
-      localStorage.setItem("auth_token", data.token);
+    adminAPI.login(password).then(res => {
+      localStorage.setItem("auth_token", res.data.token);
       navigate('/');
     });
   }
