@@ -6,7 +6,7 @@ const adminAPI = {
       return await API.post("/admin/login", {
         password: password,
       }, {
-        credentials: "include",
+        withCredentials: "include",
       });
     } catch (error) {
       alert(error);
