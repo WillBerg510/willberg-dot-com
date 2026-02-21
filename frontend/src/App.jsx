@@ -1,8 +1,10 @@
-import './App.css'
+import './stylesheets/App.css'
+import './stylesheets/fonts.css'
 import { useState, useEffect } from 'react';
 import updatesAPI from "./api/UpdatesAPI.js";
 import adminAPI from "./api/AdminAPI.js";
 import userAPI from "./api/UserAPI.js";
+import UpdatesBox from './components/UpdatesBox.jsx';
 
 function App() {
   const [update, setUpdate] = useState("");
@@ -126,48 +128,20 @@ function App() {
   return (
     <div id="app">
       {isAdmin &&
-        <div>
-          <h2>Logged in as admin</h2>
-          <button onClick={signOut}>Sign Out</button>
+        <div style={{display: "flex", gap: "10px", height: "36px", alignItems: "center"}}>
+          <h2 style={{margin: "0"}}>Logged in as admin</h2>
+          <button style={{margin: "0"}} onClick={signOut}>Sign Out</button>
         </div>
       }
-      <h1>WELCOME TO THE WILL BERG WEBSITE</h1>
-      <h2>THE PLACE TO BE</h2>
-      <h3>Glad you could make it</h3>
+      <h1 className="mainHeading">WILL BERG</h1>
+      <h2 className="mainSubtitle">PROGRAMMER, ARTIST, MUSICIAN</h2>
       {isAdmin &&
         <div id="enterUpdate">
           <textarea onChange={changeUpdate} cols="50" rows="5" value={update} />
-          <button id="postUpdate" onClick={postUpdate}>Post an update</button>
+          <button id="postUpdate" onClick={postUpdate} style={{marginBottom: "30px"}}>Post an update</button>
         </div>
       }
-      {updates.toReversed().map((update, i) =>
-        <div index={i} className="update">
-          <h2 className="updateText">{update.text}</h2>
-          <p className="updateDate">{update.date.toLocaleString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-          })}</p>
-          {isAdmin &&
-            <button className="deleteUpdate" onClick={() => deleteUpdate(update._id)}>Delete</button>
-          }
-          <div className="reactions">
-            {Object.entries(reactions).map(([reactionName, reactionEmoji]) => 
-              <button
-                className="reaction"
-                style={{
-                  backgroundColor: update.reacted[reactionName] ? "lightgreen" : "lightgrey",
-                }}
-                onClick={() => toggleReaction(update, reactionName)}>
-                {reactionEmoji} {(update.reactionNums?.[reactionName] || 0) + (update.reacted?.[reactionName] || 0)}
-              </button>
-            )}
-          </div>
-        </div>
-      )}
+      <UpdatesBox updates={updates} reactions={reactions} toggleReaction={toggleReaction} />
     </div>
   )
 }

@@ -16,21 +16,26 @@ h1, h2, h3, p {
   margin: 10px;
 }
 
+.mainHeading {
+  font-size: 75px;
+  letter-spacing: 3px;
+  margin: 0;
+}
+
+.mainSubtitle {
+  font-weight: 500;
+  font-size: 30px;
+  margin: 0;
+  font-family: wbf2;
+  margin-bottom: 15px;
+}
+
 .update {
   background-color: white;
   padding: 5px;
   margin: 10px;
   width: 100%;
   position: relative;
-}
-
-.updateText {
-  white-space: pre-wrap;
-  padding-top: 5px;
-}
-
-.updateDate {
-  padding-bottom: 5px;
 }
 
 .deleteUpdate {

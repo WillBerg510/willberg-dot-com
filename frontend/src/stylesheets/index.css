@@ -1,5 +1,4 @@
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -13,8 +12,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root, button, textarea {
+  font-family: wbf1, wbf2, system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
 button {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   cursor: pointer;
 }
 
