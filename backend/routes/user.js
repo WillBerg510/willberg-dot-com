@@ -14,7 +14,7 @@ router.get("/verify", async (req, res) => {
 });
 
 // User token acquisition
-router.get("/", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const userId = crypto.randomUUID();
     const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "2h"});

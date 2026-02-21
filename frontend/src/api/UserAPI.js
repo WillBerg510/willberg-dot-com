@@ -15,7 +15,7 @@ const userAPI = {
 
   getUser: async () => {
     try {
-      return API.get("/user", {}, {
+      return API.post("/user", {}, {
         withCredentials: "include",
       });
     } catch (error) {
