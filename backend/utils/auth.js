@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// Verify that the API call is from a user with a valid admin access token
 const auth = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token || token == "null") {

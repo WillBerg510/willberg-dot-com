@@ -5,6 +5,7 @@ const Update = require("../models/Update.js");
 const auth = require("../utils/auth.js");
 const jwt = require('jsonwebtoken');
 
+// Add new update
 router.post("/", auth, async (req, res) => {
   const {text, date} = req.body;
   try {
@@ -19,6 +20,7 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
+// Get all updates and provide specific information if a valid user that made the call
 router.get("/", cors(), async (req, res) => {
   const user_token = req.headers.authorization?.split(' ')[1];
   try {
@@ -40,6 +42,7 @@ router.get("/", cors(), async (req, res) => {
   }
 });
 
+// Delete an update from its ID
 router.delete("/one/:id", auth, async (req, res) => {
   try {
     const update = await Update.findOneAndDelete({
@@ -56,6 +59,7 @@ router.delete("/one/:id", auth, async (req, res) => {
   }
 });
 
+// Clear all updates
 router.delete("/clear", auth, async (req, res) => {
   try {
     await Update.deleteMany({});
@@ -65,6 +69,7 @@ router.delete("/clear", auth, async (req, res) => {
   }
 });
 
+// Add a reaction to an update
 router.patch("/react/:id", async (req, res) => {
   try {
     const {reaction, user_token} = req.body;
@@ -79,6 +84,7 @@ router.patch("/react/:id", async (req, res) => {
   }
 });
 
+// Remove a user's reaction to an update 
 router.patch("/unreact/:id", async (req, res) => {
   try {
     const {reaction, user_token} = req.body;

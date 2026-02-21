@@ -15,6 +15,13 @@ function App() {
     "surprise": "😯"
   };
 
+  // Verify whether the user's access tokens are valid upon page load, from which further setup actions are performed
+  useEffect(() => {
+    userVerify();
+    adminVerify();
+  }, []);
+
+  // Add new update, clear update input, and get updated list
   const postUpdate = () => {
     if (update != "") {
       updatesAPI.postUpdate(localStorage.getItem("auth_token"), update).then(() => {
@@ -24,6 +31,7 @@ function App() {
     }
   };
 
+  // Get all updates
   const getUpdates = () => {
     updatesAPI.getUpdates(localStorage.getItem("user_auth_token")).then(res => {
       res.data.updates.forEach((update) => {
@@ -33,6 +41,7 @@ function App() {
     });
   };
 
+  // Attempt renewal of admin tokens, and revoke admin privileges if unsuccessful
   const refresh = () => {
     adminAPI.refresh().then(res => {
       setIsAdmin(res.data.token != "n/a");
@@ -40,6 +49,7 @@ function App() {
     });
   }
 
+  // Determine whether the user's admin access token is valid, and then attempt a refresh with the refresh token
   const adminVerify = () => {
     adminAPI.verify(localStorage.getItem("auth_token")).then(res => {
       setIsAdmin(res.data.admin);
@@ -47,6 +57,7 @@ function App() {
     });
   }
 
+  // Determine whether the user's standard access token is valid, and then attempt a refresh with the refresh token
   const userVerify = () => {
     userAPI.verify(localStorage.getItem("user_auth_token")).then(res => {
       if (res.data.valid) {
@@ -56,14 +67,15 @@ function App() {
     });
   }
 
+  // Acquire new user access token, and get all updates
   const getUser = () => {
     userAPI.getUser().then(res => {
       localStorage.setItem("user_auth_token", res.data.token);
-      userRefresh();
       getUpdates();
     });
   }
 
+  // Attempt renewal of user tokens, and get all updates if successful; otherwise, get a new user
   const userRefresh = () => {
     userAPI.refresh().then(res => {
       if (res.data.token != "n/a") {
@@ -74,23 +86,15 @@ function App() {
     });
   }
 
-  useEffect(() => {
-    userVerify();
-    adminVerify();
-  }, []);
-
-  const changeUpdate = (e) => {
-    setUpdate(e.target.value);
-  }
-
+  // Remove admin access token, remove admin refresh token, and revoke admin privileges
   const signOut = () => {
     localStorage.removeItem("auth_token");
     adminAPI.signOut().then(() => {
       setIsAdmin(false);
-      getUpdates();
     });
   }
 
+  // Either add or remove reaction based on its current state, and appropriately modify the reaction's appearance on the page
   const toggleReaction = (update, reaction) => {
     if (update.reacted[reaction]) {
       updatesAPI.removeReaction(localStorage.getItem("user_auth_token"), update._id, reaction);
@@ -107,10 +111,16 @@ function App() {
     }));
   }
 
+  // Delete update from its ID
   const deleteUpdate = (_id) => {
     updatesAPI.deleteUpdate(localStorage.getItem("auth_token"), _id).then(() => {
       getUpdates();
     });
+  }
+
+  // On change of update textarea
+  const changeUpdate = (e) => {
+    setUpdate(e.target.value);
   }
 
   return (

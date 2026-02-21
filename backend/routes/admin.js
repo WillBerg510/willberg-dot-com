@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
+// Admin login and token acquisition
 router.post("/login", async (req, res) => {
   const { password } = req.body;
   try {
@@ -22,6 +23,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Admin token renewal
 router.post("/refresh", async (req, res) => {
   const refreshToken = req.cookies?.refresh_token;
   if (refreshToken) {
@@ -44,6 +46,7 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
+// Admin signout and revoking of refresh token
 router.post("/signout", async (req, res) => {
   const refreshToken = req.cookies?.refresh_token;
   if (refreshToken) {
@@ -52,6 +55,7 @@ router.post("/signout", async (req, res) => {
   res.status(200).json({message: "Signed out"});
 });
 
+// Verify if admin access token is valid
 router.get("/verify", async (req, res) => {
   const token = req.headers.authorization?.split(' ')[1];
   try {
