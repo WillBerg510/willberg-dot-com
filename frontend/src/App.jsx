@@ -10,6 +10,7 @@ function App() {
   const [update, setUpdate] = useState("");
   const [updates, setUpdates] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   
   const reactions = {
     "heart": "❤️",
@@ -39,7 +40,7 @@ function App() {
       res.data.updates.forEach((update) => {
         update.date = new Date(update.date);
       });
-      setUpdates(res.data.updates);
+      setUpdates(res.data.updates.toReversed());
     });
   };
 
@@ -134,14 +135,17 @@ function App() {
         </div>
       }
       <h1 className="mainHeading">WILL BERG</h1>
-      <h2 className="mainSubtitle">PROGRAMMER, ARTIST, MUSICIAN</h2>
+      <h2 className="mainSubtitle">AND THE WEBSITE ON THE INTERNET</h2>
       {isAdmin &&
         <div id="enterUpdate">
           <textarea onChange={changeUpdate} cols="50" rows="5" value={update} />
           <button id="postUpdate" onClick={postUpdate} style={{marginBottom: "30px"}}>Post an update</button>
         </div>
       }
-      <UpdatesBox updates={updates} reactions={reactions} toggleReaction={toggleReaction} />
+      <UpdatesBox updates={updates} reactions={reactions} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} setAllUpdatesOpen={setAllUpdatesOpen} deleteUpdate={deleteUpdate} />
+      {allUpdatesOpen && <div className="windowOnTop" onClick={() => setAllUpdatesOpen(false)}>
+        <UpdatesBox updates={updates} reactions={reactions} toggleReaction={toggleReaction} isAdmin={isAdmin} full={true} setAllUpdatesOpen={setAllUpdatesOpen} deleteUpdate={deleteUpdate} />
+      </div>}
     </div>
   )
 }

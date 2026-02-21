@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
   text-align: center;
 }
 
@@ -9,6 +8,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  margin-top: 35px;
 }
 
 h1, h2, h3, p {
@@ -26,38 +27,12 @@ h1, h2, h3, p {
   font-size: 30px;
   margin: 0;
   font-family: wbf2;
-  margin-bottom: 15px;
-}
-
-.update {
-  background-color: white;
-  padding: 5px;
-  margin: 10px;
-  width: 100%;
-  position: relative;
-}
-
-.deleteUpdate {
-  bottom: 10px;
-  right: 10px;
-  position: absolute;
-}
-
-.reactions {
-  bottom: 10px;
-  left: 10px;
-  position: absolute;
-  display: flex;
-  flex-direction: row;
-}
-
-.reaction {
-  margin-right: 5px;
-  font-weight: bold;
+  margin-bottom: 25px;
 }
 
 textarea {
   resize: none;
+  font-size: 17px;
 }
 
 #enterUpdate {
@@ -65,10 +40,22 @@ textarea {
   flex-direction: column;
   width: 50%;
   align-items: center;
-  margin-top: 10px;
 }
 
 #postUpdate {
   margin-top: 10px;
   margin-bottom: 10px;
+}
+
+.windowOnTop {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

@@ -1,11 +1,48 @@
+.updatesBoxAndButton {
+  max-width: 900px;
+  width: 90%;
+  display: flex;
+  position: relative;
+}
+
+.updatesBoxAndButtonFull {
+  position: absolute;
+}
+
 .updatesBox {
   background-color: lightgreen;
-  width: 100%;
   border-radius: 70px;
   position: relative;
   display: flex;
   align-items: center;
   flex-direction: column;
+  z-index: 1;
+  width: 100%;
+  height: max-content;
+}
+
+.updatesBoxFull {
+  height: calc(70vh);
+  overflow-y: scroll;
+  scrollbar-width: none;
+}
+
+.updatesBoxCollapsed {
+  max-height: 169px;
+  overflow-y: hidden;
+}
+
+.updatesBoxClickable {
+  cursor: pointer;
+}
+
+.updatesBoxOverflow {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  background-image: linear-gradient(to bottom, transparent, lightgreen);
+  z-index: 1;
 }
 
 .updatesHeader {
@@ -22,57 +59,66 @@
   width: calc(100% - 30px);
 }
 
-.willUpdateCircle {
-  width: 16%;
-  max-width: 110px;
-  background-color: aliceblue;
+.updateRowPreview {
+  align-items: flex-start;
+}
+
+.updateIcon {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  width: 110px;
+}
+
+.willIcon {
+  width: 100%;
   border-radius: 55px;
+}
+
+.updateTriangle {
+  width: 0;
+  height: 0;
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 10px solid white;
 }
 
 .updateBubble {
   background-color: white;
-  flex: 1;
-  margin: 0px 12px 0px 18px;
-  border-radius: 30px;
+  margin: 0px 6px 0px 16px;
+  border-radius: 20px 35px 35px 20px;
   position: relative;
   text-align: left;
   display: flex;
   align-items: center;
-  min-height: 70px;
-}
-
-.updateTriangle {
-  position: absolute;
-  width: 0;
-  height: 0;
-  border-top: 8px solid transparent;
-  border-bottom: 8px solid transparent;
-  border-right: 14px solid white;
-  left: -12px;
+  min-height: 109.6px;
+  flex: 1;
 }
 
 .updateDate {
-  margin: 12px 0px 0px 15px;
-  color: darkslategray;
+  margin: 7px 0px -3px 12px;
+  color: rgba(0, 0, 0, 0.6);
   font-family: wbf2;
-  font-size: 16px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .updateText {
-  margin: 0px 15px 6px 15px;
-  font-size: 18px;
-  line-height: 22px;
-  letter-spacing: 0.25px;
+  margin: 0px 12px 3px 12px;
+  font-size: 17px;
+  line-height: 18.5px;
+  letter-spacing: 0.4px;
 }
 
 .updateReactionsBar {
-  margin: 0px 0px 12px 15px;
+  margin: 0px 0px 7px 12px;
   display: flex;
   gap: 7px;
 }
 
-.updateReaction {
-  min-width: 50px;
+.updateLowerButton {
+  min-width: 45px;
   border: 1px solid black;
   background-color: transparent;
   border-radius: 100px;
@@ -81,10 +127,28 @@
   transition: background-color 0.2s ease-out;
 }
 
+.updateLowerButton:hover {
+  background-color: #E1E1E1;
+}
+
+.updateDelete {
+  position: absolute;
+  bottom: 7px;
+  right: 17px;
+  height: 20.6px;
+  width: 55px;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.updateDelete:hover {
+  background-color: #FFAAAA;
+}
+
 .updateReactionEmoji {
   margin: 0px 5px 1px 0px;
   font-family: wbf2;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .updateReactionNumber {
@@ -94,7 +158,38 @@
   font-size: 14px;
 }
 
-.updateReactionSelected {
+.updateReactionSelected, .updateReactionSelected:hover {
   background-color: black;
   color: white;
+}
+
+.updatesButton {
+  position: absolute;
+  width: 100%;
+  height: calc(100% + 30px);
+  background-color: darkgreen;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  border-radius: 105px;
+  z-index: 0;
+  cursor: pointer;
+}
+
+.updatesButtonText {
+  margin: 0;
+  line-height: 27px;
+  font-family: wbf2;
+  font-size: 23px;
+  font-weight: 500;
+  color: white;
+}
+
+.updatesClose {
+  height: calc(100% + 40px);
+  border-radius: 115px;
+}
+
+.updatesCloseText {
+  line-height: 37px;
 }
