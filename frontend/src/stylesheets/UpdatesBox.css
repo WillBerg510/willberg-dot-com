@@ -25,6 +25,7 @@
   height: calc(70vh);
   overflow-y: scroll;
   scrollbar-width: none;
+  overscroll-behavior: none;
 }
 
 .updatesBoxCollapsed {
