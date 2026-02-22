@@ -12,7 +12,7 @@ require("dotenv").config();
 const PORT = process.env.PORT || 5050;
 const app = express();
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.DEV_MODE ? process.env.DEV_MONGO_URI : process.env.MONGO_URI)
 .then(() => {
     console.log('MongoDB connected successfully');
 })
@@ -20,18 +20,10 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('MongoDB connection error:', err);
 });
 
-if (process.env.DEV_MODE) {
-    app.use(cors({
-        origin: 'http://localhost:5173',
-        credentials: true,
-    }));
-}
-else {
-    app.use(cors({
-        origin: 'https://willbergforever.com',
-        credentials: true,
-    }))
-}
+app.use(cors({
+    origin: process.env.DEV_MODE ? 'http://localhost:5173' : 'https://willbergforever.com',
+    credentials: true,
+}));
 app.use(express.json());
 app.use(cookieparser());
 app.use(express.urlencoded({ extended: false }));

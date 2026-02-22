@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import adminAPI from "./api/AdminAPI.js";
+import adminAPI from "../api/AdminAPI.js";
 
 const Login = () => {
   const [password, setPassword] = useState("");

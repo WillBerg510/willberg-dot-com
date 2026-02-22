@@ -1,10 +1,10 @@
-import './stylesheets/App.css'
-import './stylesheets/fonts.css'
+import '../stylesheets/App.css'
+import '../stylesheets/fonts.css'
 import { useState, useEffect } from 'react';
-import updatesAPI from "./api/UpdatesAPI.js";
-import adminAPI from "./api/AdminAPI.js";
-import userAPI from "./api/UserAPI.js";
-import UpdatesBox from './components/UpdatesBox.jsx';
+import updatesAPI from "../api/UpdatesAPI.js";
+import adminAPI from "../api/AdminAPI.js";
+import userAPI from "../api/UserAPI.js";
+import UpdatesBox from '../components/UpdatesBox.jsx';
 
 function App() {
   const [update, setUpdate] = useState("");
