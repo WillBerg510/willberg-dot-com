@@ -3,6 +3,7 @@
   font-weight: 400;
 
   scrollbar-gutter: stable;
+  overscroll-behavior: none;
 
   color-scheme: light;
   color: #121212;
