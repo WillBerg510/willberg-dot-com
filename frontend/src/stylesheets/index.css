@@ -1,10 +1,8 @@
-html {
-  scrollbar-gutter: stable;
-}
-
 :root {
   line-height: 1.5;
   font-weight: 400;
+
+  scrollbar-gutter: stable;
 
   color-scheme: light;
   color: #121212;
