@@ -28,10 +28,11 @@ if (process.env.DEV_MODE) {
 } else {
     app.use(cors({
         origin: (origin, callback) => {
-            if ((new URL(origin)).hostname.endsWith("willbergforever")) {
+            const host = (new URL(origin)).hostname;
+            if (host.endsWith("willbergforever")) {
                 callback(null, origin);
             } else {
-                callback(new Error("Origin not allowed"));
+                callback(new Error(`Origin not allowed for host ${host}`));
             }
         },
         credentials: true,
