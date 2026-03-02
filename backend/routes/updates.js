@@ -20,7 +20,7 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-// Get all updates and provide specific information if a valid user that made the call
+// Get all updates and provide specific information if a valid user made the call
 router.get("/", cors(), async (req, res) => {
   const user_token = req.headers.authorization?.split(' ')[1];
   try {
