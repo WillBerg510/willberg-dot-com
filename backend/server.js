@@ -22,12 +22,18 @@ mongoose.connect(process.env.DEV_MODE ? process.env.DEV_MONGO_URI : process.env.
 
 if (process.env.DEV_MODE) {
     app.use(cors({
-        credentials: true,
         origin: true,
+        credentials: true,
     }));
 } else {
     app.use(cors({
-        origin: 'https://willbergforever.com',
+        origin: (origin, callback) => {
+            if ((new URL(origin)).hostname.endsWith("willbergforever")) {
+                callback(null, origin);
+            } else {
+                callback(new Error("Origin not allowed"));
+            }
+        },
         credentials: true,
     }));
 }
