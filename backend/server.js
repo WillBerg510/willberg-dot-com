@@ -33,10 +33,10 @@ if (process.env.DEV_MODE) {
                 if (host == "willbergforever.com" || host.endsWith(".willbergforever.com")) {
                     callback(null, origin);
                 } else {
-                    callback(new Error(`Origin not allowed for host ${host}`));
+                    callback(null);
                 }
             } catch {
-                callback(new Error('Origin cannot be parsed'));
+                callback(null);
             }
         },
         credentials: true,
