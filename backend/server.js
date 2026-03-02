@@ -28,8 +28,8 @@ if (process.env.DEV_MODE) {
 } else {
     app.use(cors({
         origin: (origin, callback) => {
+            console.log(origin);
             try {
-                console.log(host);
                 const host = (new URL(origin)).hostname;
                 if (host == "willbergforever.com" || host.endsWith(".willbergforever.com")) {
                     callback(null, origin);
