@@ -36,7 +36,7 @@ if (process.env.DEV_MODE) {
                     callback(new Error(`Origin not allowed for host ${host}`));
                 }
             } catch {
-                callback(new Error('Origin cannot be parsed')):
+                callback(new Error('Origin cannot be parsed'));
             }
         },
         credentials: true,
