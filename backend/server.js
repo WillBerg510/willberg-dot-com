@@ -28,6 +28,7 @@ if (process.env.DEV_MODE) {
 } else {
     app.use(cors({
         origin: (origin, callback) => {
+            console.log(`Given origin ${origin}`);
             const host = (new URL(origin)).hostname;
             if (host == "willbergforever.com" || host.endsWith(".willbergforever.com")) {
                 callback(null, origin);
