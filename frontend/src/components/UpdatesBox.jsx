@@ -1,6 +1,5 @@
 import '../stylesheets/UpdatesBox.css';
 import { useRef, useState, useEffect } from 'react';
-import WillIcon from '../assets/Will.png';
 import UpdateBubble from './UpdateBubble.jsx';
 
 const UpdatesBox = (props) => {
@@ -8,7 +7,6 @@ const UpdatesBox = (props) => {
   const boxRef = useRef(null);
   const [expanded, setExpanded] = useState(full);
   const [showGradient, setShowGradient] = useState(false);
-  const [imagesReady, setImagesReady] = useState(false);
 
   const expandPreview = () => {
     setExpanded(true);
@@ -30,15 +28,10 @@ const UpdatesBox = (props) => {
     setTimeout(() => {
       setShowGradient(boxRef.current?.scrollHeight > boxRef.current?.offsetHeight);
     }, 200);
-  }, [imagesReady, updates]);
-
-  const onImagesReady = () => {
-    setImagesReady(true);
-  }
+  }, [updates]);
 
   return (
     <div className={`updatesBoxAndButton${full ? " updatesBoxAndButtonFull" : ""}`} onClick={receiveClick}>
-      <img src={WillIcon} style={{display: "none"}} onLoad={onImagesReady}/>
       <div ref={boxRef}
         onClick={expandPreview}
         className={`updatesBox
@@ -51,14 +44,8 @@ const UpdatesBox = (props) => {
         {(!expanded) && (<div className={`updatesBoxOverflow ${showGradient ? "" : "transparent"}`} />)}
         {userVerifyFailed && <p className="updatesBoxInfo">Unable to connect with backend server.</p>}
         {getUpdates.isLoading && <p className="updatesBoxInfo">Loading...</p>}
-        {imagesReady && (full ? updates : updates?.slice(0, 1))?.map((update) => (
-          <div className={`updateRow${ full ? " updateRowFull" : " updateRowPreview"}`} key={update._id}>
-            <div className="updateIcon">
-              <img src={WillIcon} className="willIcon" />
-              <div className="updateTriangle"></div>
-            </div>
-            <UpdateBubble full={full} update={update} isAdmin={isAdmin} toggleReaction={toggleReaction} deleteUpdate={deleteUpdate} />
-          </div>
+        {(full ? updates : updates?.slice(0, 1))?.map((update) => (
+          <UpdateBubble full={full} update={update} isAdmin={isAdmin} toggleReaction={toggleReaction} deleteUpdate={deleteUpdate} />
         ))}
       </div>
       {!full && (<div className="updatesButton" onClick={toggleSeeMore}>
