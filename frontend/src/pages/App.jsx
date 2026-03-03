@@ -1,6 +1,7 @@
 import '../stylesheets/App.css'
 import '../stylesheets/fonts.css'
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import updatesAPI from "../api/UpdatesAPI.js";
 import adminAPI from "../api/AdminAPI.js";
 import userAPI from "../api/UserAPI.js";
@@ -12,6 +13,7 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   const [userVerifyFailed, setUserVerifyFailed] = useState(false);
+  const client = useQueryClient();
 
   // Verify whether the user's access tokens are valid upon page load, from which further setup actions are performed
   useEffect(() => {
@@ -19,25 +21,39 @@ function App() {
     adminVerify();
   }, []);
 
-  // Add new update, clear update input, and get updated list
-  const postUpdate = () => {
-    if (update != "") {
-      updatesAPI.postUpdate(localStorage.getItem("auth_token"), update).then(() => {
-        getUpdates();
-        setUpdate("");
-      });
+  // Add new update and clear update input
+  const postUpdate = useMutation({
+    mutationFn: () => (update != "") ? updatesAPI.postUpdate(localStorage.getItem("auth_token"), update) : null,
+    onSuccess: () => {
+      client.invalidateQueries(["updates"]);
+      setUpdate("");
     }
-  };
+  });
 
   // Get all updates
-  const getUpdates = () => {
-    updatesAPI.getUpdates(localStorage.getItem("user_auth_token")).then(res => {
-      res.data.updates.forEach((update) => {
-        update.date = new Date(update.date);
+  const getUpdates = useQuery({
+    queryKey: ["updates"],
+    queryFn: () => {
+      if (!localStorage.getItem("user_auth_token")) return [];
+      return updatesAPI.getUpdates(localStorage.getItem("user_auth_token")).then(res => {
+        res.data.updates.forEach((update) => {
+          update.date = new Date(update.date);
+        });
+        return res.data.updates.toReversed();
       });
-      setUpdates(res.data.updates.toReversed());
-    });
-  };
+    },
+  });
+  useEffect(() => {
+    setUpdates(getUpdates.data);
+  }, [getUpdates]);
+
+  // Delete update from its ID
+  const deleteUpdate = useMutation({
+    mutationFn: (_id) => updatesAPI.deleteUpdate(localStorage.getItem("auth_token"), _id),
+    onSuccess: () => {
+      client.invalidateQueries(["updates"]);
+    }
+  });
 
   // Attempt renewal of admin tokens, and revoke admin privileges if unsuccessful
   const refresh = () => {
@@ -64,7 +80,7 @@ function App() {
         setUserVerifyFailed(true);
       } else {
         if (res.data.valid) {
-          getUpdates();
+          client.invalidateQueries(["updates"]);
         }
         userRefresh();
       }
@@ -75,7 +91,7 @@ function App() {
   const getUser = () => {
     userAPI.getUser().then(res => {
       localStorage.setItem("user_auth_token", res.data.token);
-      getUpdates();
+      client.invalidateQueries(["updates"]);
     });
   }
 
@@ -84,7 +100,7 @@ function App() {
     userAPI.refresh().then(res => {
       if (res.data.token != "n/a") {
         localStorage.setItem("user_auth_token", res.data.token);
-        getUpdates();
+        client.invalidateQueries(["updates"]);
       }
       else getUser();
     });
@@ -125,13 +141,7 @@ function App() {
       document.body.style.overflowY = "hidden";
       document.body.style.overscrollBehavior = "none";
     }
-  }
-
-  // Delete update from its ID
-  const deleteUpdate = (_id) => {
-    updatesAPI.deleteUpdate(localStorage.getItem("auth_token"), _id).then(() => {
-      getUpdates();
-    });
+    client.invalidateQueries(["updates"]);
   }
 
   // On change of update textarea
@@ -152,12 +162,12 @@ function App() {
       {isAdmin &&
         <div id="enterUpdate">
           <textarea onChange={changeUpdate} cols="50" rows="5" value={update} />
-          <button id="postUpdate" onClick={postUpdate} style={{marginBottom: "30px"}}>Post an update</button>
+          <button id="postUpdate" onClick={postUpdate.mutate} style={{marginBottom: "30px"}}>Post an update</button>
         </div>
       }
-      <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} />
+      <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
-        <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} />
+        <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
       </div>}
     </div>
   )

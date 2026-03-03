@@ -13,7 +13,7 @@ router.post("/login", async (req, res) => {
     const refreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      sameSite: 'None',
+      sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
       secure: (process.env.DEV_MODE ? false : true),
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -33,7 +33,7 @@ router.post("/refresh", async (req, res) => {
       const newRefreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
       res.cookie('refresh_token', newRefreshToken, {
         httpOnly: true,
-        sameSite: 'None',
+        sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
         secure: (process.env.DEV_MODE ? false : true),
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });

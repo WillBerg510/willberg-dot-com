@@ -21,7 +21,7 @@ router.post("/", async (req, res) => {
     const refreshToken = jwt.sign({user: userId}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
     res.cookie('user_refresh_token', refreshToken, {
       httpOnly: true,
-      sameSite: 'None',
+      sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
       secure: (process.env.DEV_MODE ? false : true),
       maxAge: 365 * 24 * 60 * 60 * 1000,
     });
@@ -41,7 +41,7 @@ router.post("/refresh", async (req, res) => {
       const newRefreshToken = jwt.sign({user: decoded.user}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
       res.cookie('user_refresh_token', newRefreshToken, {
         httpOnly: true,
-        sameSite: 'None',
+        sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
         secure: (process.env.DEV_MODE ? false : true),
         maxAge: 365 * 24 * 60 * 60 * 1000,
       });

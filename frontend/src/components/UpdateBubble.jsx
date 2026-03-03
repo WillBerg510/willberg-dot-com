@@ -13,7 +13,7 @@ const UpdateBubble = (props) => {
         setConfirmDelete(false);
       }, 2000);
     }
-    else deleteUpdate(update._id);
+    else deleteUpdate.mutate(update._id);
   }
 
   return (
