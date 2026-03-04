@@ -23,7 +23,7 @@ const UpdateBubble = (props) => {
   }
 
   return (
-    <div style={imageReady ? {display: "flex"} : {display: "none"}} className={`updateRow${ full ? " updateRowFull" : " updateRowPreview"}`} key={update._id}>
+    <div style={imageReady ? {display: "flex"} : {display: "none"}} className={`updateRow${ full ? " updateRowFull" : " updateRowPreview"}`}>
       <div className="updateIcon">
         <img src={WillIcon} className="willIcon" onLoad={onImageReady} />
         <div className="updateTriangle" />

@@ -44,8 +44,50 @@ function App() {
     },
   });
   useEffect(() => {
+    if (getUpdates.error?.response.status == 500) {
+      userRefresh(true);
+    }
     setUpdates(getUpdates.data);
   }, [getUpdates]);
+
+  // Either add or remove reaction based on its current state, and appropriately modify the reaction's appearance on the page
+  const addReaction = useMutation({
+    mutationFn: ({update, reaction}) => updatesAPI.addReaction(localStorage.getItem("user_auth_token"), update._id, reaction),
+    retry: (count, error) => {
+      if (error.response.status == 500 && count < 1) {
+        userRefresh(false);
+        return true;
+      }
+      return false;
+    }
+  });
+
+  const removeReaction = useMutation({
+    mutationFn: ({update, reaction}) => updatesAPI.removeReaction(localStorage.getItem("user_auth_token"), update._id, reaction),
+    retry: (count, error) => {
+      if (error.response.status == 500 && count < 1) {
+        userRefresh(false);
+        return true;
+      }
+      return false;
+    }
+  });
+
+  const toggleReaction = (update, reaction) => {
+    setUpdates(updates.map(up => {
+      if (update._id == up._id) {
+        var newReacted = up.reacted;
+        newReacted[reaction] = !up.reacted[reaction];
+        return {...up, reacted: newReacted}
+      }
+      else return up;
+    }));
+    if (update.reacted[reaction]) {
+      addReaction.mutate({update, reaction});
+    } else {
+      removeReaction.mutate({update, reaction});
+    }
+  }
 
   // Delete update from its ID
   const deleteUpdate = useMutation({
@@ -82,7 +124,7 @@ function App() {
         if (res.data.valid) {
           client.invalidateQueries(["updates"]);
         }
-        userRefresh();
+        userRefresh(true);
       }
     });
   }
@@ -96,11 +138,11 @@ function App() {
   }
 
   // Attempt renewal of user tokens, and get all updates if successful; otherwise, get a new user
-  const userRefresh = () => {
+  const userRefresh = (getUpdates) => {
     userAPI.refresh().then(res => {
       if (res.data.token != "n/a") {
         localStorage.setItem("user_auth_token", res.data.token);
-        client.invalidateQueries(["updates"]);
+        if (getUpdates) client.invalidateQueries(["updates"]);
       }
       else getUser();
     });
@@ -112,23 +154,6 @@ function App() {
     adminAPI.signOut().then(() => {
       setIsAdmin(false);
     });
-  }
-
-  // Either add or remove reaction based on its current state, and appropriately modify the reaction's appearance on the page
-  const toggleReaction = (update, reaction) => {
-    if (update.reacted[reaction]) {
-      updatesAPI.removeReaction(localStorage.getItem("user_auth_token"), update._id, reaction);
-    } else {
-      updatesAPI.addReaction(localStorage.getItem("user_auth_token"), update._id, reaction);
-    }
-    setUpdates(updates.map(up => {
-      if (update._id == up._id) {
-        var newReacted = up.reacted;
-        newReacted[reaction] = !up.reacted[reaction];
-        return {...up, reacted: newReacted}
-      }
-      else return up;
-    }));
   }
 
   const toggleSeeMore = () => {

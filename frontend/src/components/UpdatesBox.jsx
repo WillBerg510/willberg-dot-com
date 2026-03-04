@@ -9,7 +9,7 @@ const UpdatesBox = (props) => {
   const [showGradient, setShowGradient] = useState(false);
 
   const expandPreview = () => {
-    setExpanded(true);
+    if (showGradient) setExpanded(true);
   }
 
   const receiveClick = (e) => {
@@ -45,7 +45,7 @@ const UpdatesBox = (props) => {
         {userVerifyFailed && <p className="updatesBoxInfo">Unable to connect with backend server.</p>}
         {getUpdates.isLoading && <p className="updatesBoxInfo">Loading...</p>}
         {(full ? updates : updates?.slice(0, 1))?.map((update) => (
-          <UpdateBubble full={full} update={update} isAdmin={isAdmin} toggleReaction={toggleReaction} deleteUpdate={deleteUpdate} />
+          <UpdateBubble key={update._id} full={full} update={update} isAdmin={isAdmin} toggleReaction={toggleReaction} deleteUpdate={deleteUpdate} />
         ))}
       </div>
       {!full && (<div className="updatesButton" onClick={toggleSeeMore}>
