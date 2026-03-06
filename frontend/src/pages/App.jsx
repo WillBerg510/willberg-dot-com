@@ -10,7 +10,6 @@ import UpdatesBox from '../components/UpdatesBox.jsx';
 function App() {
   const [update, setUpdate] = useState("");
   const [updates, setUpdates] = useState([]);
-  const [isAdminn, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   const [userVerifyFailed, setUserVerifyFailed] = useState(false);
   const client = useQueryClient();
@@ -50,7 +49,7 @@ function App() {
 
   // Either add or remove reaction based on its current state, and appropriately modify the reaction's appearance on the page
   const addReaction = useMutation({
-    mutationFn: ({update, reaction}) => updatesAPI.addReaction(localStorage.getItem("user_auth_token"), update._id, reaction),
+    mutationFn: ({update, reaction}) => updatesAPI.addReaction(update._id, reaction),
     retry: (count, error) => {
       if (error.response.status == 500 && count < 1) {
         userRefresh(false);
@@ -61,7 +60,7 @@ function App() {
   });
 
   const removeReaction = useMutation({
-    mutationFn: ({update, reaction}) => updatesAPI.removeReaction(localStorage.getItem("user_auth_token"), update._id, reaction),
+    mutationFn: ({update, reaction}) => updatesAPI.removeReaction(update._id, reaction),
     retry: (count, error) => {
       if (error.response.status == 500 && count < 1) {
         userRefresh(false);
@@ -89,7 +88,7 @@ function App() {
 
   // Delete update from its ID
   const deleteUpdate = useMutation({
-    mutationFn: (_id) => updatesAPI.deleteUpdate(localStorage.getItem("auth_token"), _id),
+    mutationFn: updatesAPI.deleteUpdate,
     onSuccess: () => {
       client.invalidateQueries(["updates"]);
     }
@@ -98,7 +97,7 @@ function App() {
   // Attempt renewal of admin tokens, and revoke admin privileges if unsuccessful
   const refresh = () => {
     adminAPI.refresh().then(res => {
-      setIsAdmin(res.data.token != "n/a");
+      //setIsAdmin(res.data.token != "n/a");
       if (res.data.token != "n/a") localStorage.setItem("auth_token", res.data.token);
     });
   }
@@ -183,10 +182,10 @@ function App() {
           <button id="postUpdate" onClick={postUpdate.mutate} style={{marginBottom: "30px"}}>Post an update</button>
         </div>
       }
-      {/*<UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
+      <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
         <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
-      </div>}*/}
+      </div>}
     </div>
   )
 }

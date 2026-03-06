@@ -2,7 +2,7 @@ import API from "./BaseAPI.js";
 
 const updatesAPI = {
   getUpdates: async () => {
-    return await API.get("/updates", {}, {
+    return await API.get("/updates", {
       withCredentials: "include",
     });
   },
@@ -12,40 +12,36 @@ const updatesAPI = {
       text: update_text,
       date: Date.now(),
     }, {
-      headers: {
-        "Authorization": `Bearer ${auth_token}`,
-      },
+      withCredentials: "include",
     });
   },
 
-  addReaction: async (user_auth_token, update_id, reaction) => {
+  addReaction: async (update_id, reaction) => {
     return await API.patch(`/updates/react/${update_id}`, {
       reaction: reaction,
-      user_token: user_auth_token,
+    }, {
+      withCredentials: "include",
     });
   },
 
-  removeReaction: async (user_auth_token, update_id, reaction) => {
+  removeReaction: async (update_id, reaction) => {
     return await API.patch(`/updates/unreact/${update_id}`, {
       reaction: reaction,
-      user_token: user_auth_token,
+    }, {
+      withCredentials: "include",
     });
   },
 
-  deleteUpdate: async (auth_token, update_id) => {
+  deleteUpdate: async (update_id) => {
     return await API.delete(`/updates/one/${update_id}`, {
-      headers: {
-        "Authorization": `Bearer ${auth_token}`,
-      },
+      withCredentials: "include",
     });
   },
 
-  clearUpdates: async (auth_token) => {
+  clearUpdates: async () => {
     return await API.delete("/updates/clear", {
-      headers: {
-        "Authorization": `Bearer ${auth_token}`,
-      },
-    })
+      withCredentials: "include",
+    });
   },
 };
 

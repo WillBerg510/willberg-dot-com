@@ -71,31 +71,41 @@ router.delete("/clear", auth, async (req, res) => {
 
 // Add a reaction to an update
 router.patch("/react/:id", async (req, res) => {
-  try {
-    const {reaction, user_token} = req.body;
-    const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
-    await Update.findOneAndUpdate(
-      {_id: req.params.id},
-      {$push: {[`reactions.${reaction}`]: decoded.user}},
-    );
-    res.status(204).json({message: `Reaction ${reaction} added`});
-  } catch (err) {
+  const user_token = req.cookies?.user_auth_token;
+  if (user_token) {
+    try {
+      const { reaction } = req.body;
+      const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
+      await Update.findOneAndUpdate(
+        {_id: req.params.id},
+        {$push: {[`reactions.${reaction}`]: decoded.user}},
+      );
+      res.status(204).json({message: `Reaction ${reaction} added`});
+    } catch (err) {
+      res.status(500).json({error: "Error reacting"});
+    }
+  } else {
     res.status(500).json({error: "Error reacting"});
   }
 });
 
 // Remove a user's reaction to an update 
 router.patch("/unreact/:id", async (req, res) => {
-  try {
-    const {reaction, user_token} = req.body;
-    const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
-    await Update.findOneAndUpdate(
-      {_id: req.params.id},
-      {$pull: {[`reactions.${reaction}`]: decoded.user}},
-    );
-    res.status(204).json({message: `Reaction ${reaction} removed`});
-  } catch (err) {
-    res.status(500).json({error: "Error removing reaction"});
+  const user_token = req.cookies?.user_auth_token;
+  if (user_token) {
+    try {
+      const { reaction } = req.body;
+      const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
+      await Update.findOneAndUpdate(
+        {_id: req.params.id},
+        {$pull: {[`reactions.${reaction}`]: decoded.user}},
+      );
+      res.status(204).json({message: `Reaction ${reaction} removed`});
+    } catch (err) {
+      res.status(500).json({error: "Error removing reaction"});
+    }
+  } else {
+    res.status(500).json({error: "Error reacting"});
   }
 });
 

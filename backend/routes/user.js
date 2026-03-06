@@ -1,15 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-
-const options = (maxAgeSeconds) => {
-  return {
-    httpOnly: true,
-    sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
-    secure: (process.env.DEV_MODE ? false : true),
-    maxAge: maxAgeSeconds * 1000
-  };
-}
+const cookieOptions = require('../utils/cookieOptions');
 
 // Verify that a user's access token is valid
 router.post("/verify", async (req, res) => {
@@ -31,9 +23,9 @@ router.post("/", async (req, res) => {
   try {
     const userId = crypto.randomUUID();
     const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "30m"});
-    res.cookie('user_auth_token', accessToken, options(30 * 60));
+    res.cookie('user_auth_token', accessToken, cookieOptions(minutes = 30));
     const refreshToken = jwt.sign({user: userId}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
-    res.cookie('user_refresh_token', refreshToken, options(365 * 24 * 60 * 60));
+    res.cookie('user_refresh_token', refreshToken, cookieOptions(days = 365));
     res.status(200).json();
   } catch (err) {
     res.status(500).json({error: "User retrieval unsuccessful"});
@@ -47,9 +39,9 @@ router.post("/refresh", async (req, res) => {
     try {
       const decoded = jwt.verify(refreshToken, process.env.USER_REFRESH_TOKEN_SECRET);
       const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "30m"});
-      res.cookie('user_auth_token', accessToken, options(30 * 60));
+      res.cookie('user_auth_token', accessToken, cookieOptions(minutes = 30));
       const newRefreshToken = jwt.sign({user: decoded.user}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
-      res.cookie('user_refresh_token', newRefreshToken, options(365 * 24 * 60 * 60));
+      res.cookie('user_refresh_token', newRefreshToken, cookieOptions(days = 365));
       res.status(200).json();
     } catch (err) {
       res.status(200).json({token: "n/a"});

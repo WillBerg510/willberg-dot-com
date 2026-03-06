@@ -1,15 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-
-const options = (maxAgeSeconds) => {
-  return {
-    httpOnly: true,
-    sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
-    secure: (process.env.DEV_MODE ? false : true),
-    maxAge: maxAgeSeconds * 1000
-  };
-}
+const cookieOptions = require('../utils/cookieOptions');
 
 // Admin login and token acquisition
 router.post("/login", async (req, res) => {
@@ -19,9 +11,9 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({error: "Incorrect password"});
     }
     const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
-    res.cookie('auth_token', accessToken, options(2 * 60 * 60));
+    res.cookie('auth_token', accessToken, cookieOptions(hours = 2));
     const refreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
-    res.cookie('refresh_token', refreshToken, options(7 * 24 * 60 * 60));
+    res.cookie('refresh_token', refreshToken, cookieOptions(days = 7));
     res.status(200).json();
   } catch (err) {
     res.status(500).json({error: "Login unsuccessful"});
@@ -35,9 +27,9 @@ router.post("/refresh", async (req, res) => {
     try {
       jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
       const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
-      res.cookie('auth_token', accessToken, options(2 * 60 * 60));
+      res.cookie('auth_token', accessToken, cookieOptions(hours = 2));
       const newRefreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
-      res.cookie('refresh_token', newRefreshToken, options(7 * 24 * 60 * 60));
+      res.cookie('refresh_token', newRefreshToken, cookieOptions(days = 7));
       res.status(200).json();
     } catch (err) {
       res.status(200).json({token: "n/a"});
