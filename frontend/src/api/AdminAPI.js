@@ -2,37 +2,23 @@ import API from "./BaseAPI.js";
 
 const adminAPI = {
   login: async (password) => {
-    try {
-      return await API.post("/admin/login", {
-        password: password,
-      }, {
-        withCredentials: "include",
-      });
-    } catch (error) {
-      alert(error);
-    }
+    return await API.post("/admin/login", {
+      password: password,
+    }, {
+      withCredentials: "include",
+    });
   },
 
-  verify: async (auth_token) => {
-    try {
-      return await API.get("/admin/verify", {
-        headers: {
-          "Authorization": `Bearer ${auth_token}`,
-        }
-      });
-    } catch (error) {
-      console.log(error);
-    }
+  verify: async () => {
+    return await API.post("/admin/verify", {}, {
+      withCredentials: "include",
+    });
   },
 
   signOut: async () => {
-    try {
-      return await API.post("/admin/signout", {}, {
-        withCredentials: "include",
-      })
-    } catch (error) {
-      alert(error);
-    }
+    return await API.post("/admin/signout", {}, {
+      withCredentials: "include",
+    });
   },
 
   refresh: async () => {

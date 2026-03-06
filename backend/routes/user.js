@@ -2,14 +2,27 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
+const options = (maxAgeSeconds) => {
+  return {
+    httpOnly: true,
+    sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
+    secure: (process.env.DEV_MODE ? false : true),
+    maxAge: maxAgeSeconds * 1000
+  };
+}
+
 // Verify that a user's access token is valid
-router.get("/verify", async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  try {
-    jwt.verify(token, process.env.USER_ACCESS_TOKEN_SECRET);
-    res.status(200).json({valid: true});
-  } catch (err) {
-    res.status(200).json({valid: false});
+router.post("/verify", async (req, res) => {
+  const token = req.cookies?.user_auth_token;
+  if (token) {
+    try {
+      jwt.verify(token, process.env.USER_ACCESS_TOKEN_SECRET);
+      res.status(200).json(true);
+    } catch (err) {
+      res.status(200).json(false);
+    }
+  } else {
+    res.status(200).json(false);
   }
 });
 
@@ -17,15 +30,11 @@ router.get("/verify", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const userId = crypto.randomUUID();
-    const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
+    const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "30m"});
+    res.cookie('user_auth_token', accessToken, options(30 * 60));
     const refreshToken = jwt.sign({user: userId}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
-    res.cookie('user_refresh_token', refreshToken, {
-      httpOnly: true,
-      sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
-      secure: (process.env.DEV_MODE ? false : true),
-      maxAge: 365 * 24 * 60 * 60 * 1000,
-    });
-    res.status(200).json({token: accessToken});
+    res.cookie('user_refresh_token', refreshToken, options(365 * 24 * 60 * 60));
+    res.status(200).json();
   } catch (err) {
     res.status(500).json({error: "User retrieval unsuccessful"});
   }
@@ -37,15 +46,11 @@ router.post("/refresh", async (req, res) => {
   if (refreshToken) {
     try {
       const decoded = jwt.verify(refreshToken, process.env.USER_REFRESH_TOKEN_SECRET);
-      const accessToken = jwt.sign({user: decoded.user}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
+      const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "30m"});
+      res.cookie('user_auth_token', accessToken, options(30 * 60));
       const newRefreshToken = jwt.sign({user: decoded.user}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
-      res.cookie('user_refresh_token', newRefreshToken, {
-        httpOnly: true,
-        sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
-        secure: (process.env.DEV_MODE ? false : true),
-        maxAge: 365 * 24 * 60 * 60 * 1000,
-      });
-      res.status(200).json({token: accessToken});
+      res.cookie('user_refresh_token', newRefreshToken, options(365 * 24 * 60 * 60));
+      res.status(200).json();
     } catch (err) {
       res.status(200).json({token: "n/a"});
     }

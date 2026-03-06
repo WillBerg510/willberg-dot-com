@@ -10,7 +10,7 @@ import UpdatesBox from '../components/UpdatesBox.jsx';
 function App() {
   const [update, setUpdate] = useState("");
   const [updates, setUpdates] = useState([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminn, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   const [userVerifyFailed, setUserVerifyFailed] = useState(false);
   const client = useQueryClient();
@@ -18,7 +18,6 @@ function App() {
   // Verify whether the user's access tokens are valid upon page load, from which further setup actions are performed
   useEffect(() => {
     userVerify();
-    adminVerify();
   }, []);
 
   // Add new update and clear update input
@@ -34,8 +33,7 @@ function App() {
   const getUpdates = useQuery({
     queryKey: ["updates"],
     queryFn: () => {
-      if (!localStorage.getItem("user_auth_token")) return [];
-      return updatesAPI.getUpdates(localStorage.getItem("user_auth_token")).then(res => {
+      return updatesAPI.getUpdates().then(res => {
         res.data.updates.forEach((update) => {
           update.date = new Date(update.date);
         });
@@ -106,33 +104,30 @@ function App() {
   }
 
   // Determine whether the user's admin access token is valid, and then attempt a refresh with the refresh token
-  const adminVerify = () => {
-    adminAPI.verify(localStorage.getItem("auth_token")).then(res => {
-      if (res) {
-        setIsAdmin(res.data.admin);
-        refresh();
-      }
-    });
-  }
+  const { data: isAdmin } = useQuery({
+    queryKey: ["isAdmin"],
+    queryFn: () => adminAPI.verify().then(res => {
+      return res.data;
+    }),
+  });
 
   // Determine whether the user's standard access token is valid, and then attempt a refresh with the refresh token
-  const userVerify = () => {
-    userAPI.verify(localStorage.getItem("user_auth_token")).then(res => {
+  const { mutate: userVerify } = useMutation({
+    mutationFn: () => userAPI.verify().then(res => {
       if (!res) {
         setUserVerifyFailed(true);
-      } else {
-        if (res.data.valid) {
-          client.invalidateQueries(["updates"]);
-        }
+      }
+      else {
+        setUserVerifyFailed(false);
+        client.invalidateQueries(["updates"]);
         userRefresh(true);
       }
-    });
-  }
+    }),
+  });
 
   // Acquire new user access token, and get all updates
   const getUser = () => {
     userAPI.getUser().then(res => {
-      localStorage.setItem("user_auth_token", res.data.token);
       client.invalidateQueries(["updates"]);
     });
   }
@@ -149,12 +144,10 @@ function App() {
   }
 
   // Remove admin access token, remove admin refresh token, and revoke admin privileges
-  const signOut = () => {
-    localStorage.removeItem("auth_token");
-    adminAPI.signOut().then(() => {
-      setIsAdmin(false);
-    });
-  }
+  const { mutate: signOut } = useMutation({
+    mutationFn: adminAPI.signOut,
+    onSuccess: () => client.invalidateQueries(["isAdmin"]),
+  });
 
   const toggleSeeMore = () => {
     if (allUpdatesOpen) {
@@ -190,10 +183,10 @@ function App() {
           <button id="postUpdate" onClick={postUpdate.mutate} style={{marginBottom: "30px"}}>Post an update</button>
         </div>
       }
-      <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
+      {/*<UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
         <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
-      </div>}
+      </div>}*/}
     </div>
   )
 }

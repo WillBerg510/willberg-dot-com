@@ -1,11 +1,9 @@
 import API from "./BaseAPI.js";
 
 const updatesAPI = {
-  getUpdates: async (user_auth_token) => {
-    return await API.get("/updates", {
-      headers: {
-        "Authorization": `Bearer ${user_auth_token}`,
-      },
+  getUpdates: async () => {
+    return await API.get("/updates", {}, {
+      withCredentials: "include",
     });
   },
 

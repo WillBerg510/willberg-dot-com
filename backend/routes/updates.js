@@ -22,7 +22,7 @@ router.post("/", auth, async (req, res) => {
 
 // Get all updates and provide specific information if a valid user made the call
 router.get("/", async (req, res) => {
-  const user_token = req.headers.authorization?.split(' ')[1];
+  const user_token = req.cookies?.user_auth_token;
   try {
     const updates = await Update.find().lean();
     if (user_token && user_token != "null") {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from '@tanstack/react-query';
 import adminAPI from "../api/AdminAPI.js";
 
 const Login = () => {
@@ -13,22 +14,20 @@ const Login = () => {
 
   const inputKeyDown = (e) => {
     if (e.key === "Enter") {
-      login();
+      login.mutate();
     }
   }
 
-  const login = () => {
-    adminAPI.login(password).then(res => {
-      localStorage.setItem("auth_token", res.data.token);
-      navigate('/');
-    });
-  }
+  const login = useMutation({
+    mutationFn: () => adminAPI.login(password),
+    onSuccess: () => navigate('/'),
+  });
 
   return (
     <>
       <h2>Login</h2>
       <input type="password" onChange={changePassword} value={password} onKeyDown={inputKeyDown}/>
-      <button onClick={login}>Log In</button>
+      <button onClick={login.mutate}>Log In</button>
     </>
   )
 }
