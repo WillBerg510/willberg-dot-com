@@ -11,9 +11,9 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({error: "Incorrect password"});
     }
     const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
-    res.cookie('auth_token', accessToken, cookieOptions(hours = 2));
+    res.cookie('auth_token', accessToken, cookieOptions({hours: 2}));
     const refreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
-    res.cookie('refresh_token', refreshToken, cookieOptions(days = 7));
+    res.cookie('refresh_token', refreshToken, cookieOptions({days: 7}));
     res.status(200).json();
   } catch (err) {
     res.status(500).json({error: "Login unsuccessful"});
@@ -27,9 +27,9 @@ router.post("/refresh", async (req, res) => {
     try {
       jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
       const accessToken = jwt.sign({admin: true}, process.env.ACCESS_TOKEN_SECRET, {expiresIn: "2h"});
-      res.cookie('auth_token', accessToken, cookieOptions(hours = 2));
+      res.cookie('auth_token', accessToken, cookieOptions({hours: 2}));
       const newRefreshToken = jwt.sign({admin: true}, process.env.REFRESH_TOKEN_SECRET, {expiresIn: "7d"});
-      res.cookie('refresh_token', newRefreshToken, cookieOptions(days = 7));
+      res.cookie('refresh_token', newRefreshToken, cookieOptions({days: 7}));
       res.status(200).json();
     } catch (err) {
       res.status(200).json({token: "n/a"});

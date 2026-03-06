@@ -1,4 +1,4 @@
-const cookieOptions = (days = 0, hours = 0, minutes = 0, seconds = 0) => {
+const cookieOptions = ({days = 0, hours = 0, minutes = 0, seconds = 0}) => {
   return {
     httpOnly: true,
     sameSite: (process.env.DEV_MODE ? 'Lax' : 'None'),
@@ -7,4 +7,4 @@ const cookieOptions = (days = 0, hours = 0, minutes = 0, seconds = 0) => {
   };
 }
 
-export default cookieOptions;
+module.exports = cookieOptions;
