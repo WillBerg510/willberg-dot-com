@@ -23,22 +23,26 @@ router.post("/", auth, async (req, res) => {
 // Get all updates and provide specific information if a valid user made the call
 router.get("/", async (req, res) => {
   const user_token = req.cookies?.user_auth_token;
-  try {
-    const updates = await Update.find().lean();
-    if (user_token && user_token != "null") {
-      const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
-      updates.forEach(update => {
-        update.reacted = {};
-        update.reactionNums = {};
-        Object.entries(update.reactions).forEach(([reaction, users]) => {
-          update.reacted[reaction] = users.includes(decoded.user);
-          update.reactionNums[reaction] = users.length - users.includes(decoded.user);
-        })
-      });
+  const requireUserToken = req.query?.requireUserToken;
+  if (!user_token && requireUserToken) res.status(500).json({error: "Missing cookie"});
+  else {
+    try {
+      const updates = await Update.find().lean();
+      if (user_token && user_token != "null") {
+        const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
+        updates.forEach(update => {
+          update.reacted = {};
+          update.reactionNums = {};
+          Object.entries(update.reactions).forEach(([reaction, users]) => {
+            update.reacted[reaction] = users.includes(decoded.user);
+            update.reactionNums[reaction] = users.length - users.includes(decoded.user);
+          })
+        });
+      }
+      res.status(200).json({updates});
+    } catch (err) {
+      res.status(500).json({error: "Error fetching updates"});
     }
-    res.status(200).json({updates});
-  } catch (err) {
-    res.status(500).json({error: "Error fetching updates"});
   }
 });
 

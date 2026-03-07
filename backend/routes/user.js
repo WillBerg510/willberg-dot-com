@@ -22,8 +22,8 @@ router.post("/verify", async (req, res) => {
 router.get("/", async (req, res) => {
   try {
     const userId = crypto.randomUUID();
-    const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "30m"});
-    res.cookie('user_auth_token', accessToken, cookieOptions({minutes: 30}));
+    const accessToken = jwt.sign({user: userId}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"});
+    res.cookie('user_auth_token', accessToken, cookieOptions({minutes: 15}));
     const refreshToken = jwt.sign({user: userId}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
     res.cookie('user_refresh_token', refreshToken, cookieOptions({days: 365}));
     res.status(200).json();
@@ -38,8 +38,8 @@ router.post("/refresh", async (req, res) => {
   if (refreshToken) {
     try {
       const decoded = jwt.verify(refreshToken, process.env.USER_REFRESH_TOKEN_SECRET);
-      const accessToken = jwt.sign({user: decoded.user}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "30m"});
-      res.cookie('user_auth_token', accessToken, cookieOptions({minutes: 30}));
+      const accessToken = jwt.sign({user: decoded.user}, process.env.USER_ACCESS_TOKEN_SECRET, {expiresIn: "15m"});
+      res.cookie('user_auth_token', accessToken, cookieOptions({minutes: 15}));
       const newRefreshToken = jwt.sign({user: decoded.user}, process.env.USER_REFRESH_TOKEN_SECRET, {expiresIn: "365d"});
       res.cookie('user_refresh_token', newRefreshToken, cookieOptions({days: 365}));
       res.status(200).json(true);

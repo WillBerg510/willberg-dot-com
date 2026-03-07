@@ -2,7 +2,7 @@ import API from "./BaseAPI.js";
 
 const updatesAPI = {
   getUpdates: async () => {
-    return await API.get("/updates");
+    return await API.get("/updates?requireUserToken=true");
   },
 
   postUpdate: async (update_text) => {

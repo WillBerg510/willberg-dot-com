@@ -1,7 +1,7 @@
 import '../stylesheets/App.css'
 import '../stylesheets/fonts.css'
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import updatesAPI from "../api/UpdatesAPI.js";
 import adminAPI from "../api/AdminAPI.js";
 import userAPI from "../api/UserAPI.js";
@@ -9,8 +9,6 @@ import UpdatesBox from '../components/UpdatesBox.jsx';
 
 function App() {
   const [update, setUpdate] = useState("");
-  const [updates, setUpdates] = useState([]);
-  const [userTokenGiven, setUserTokenGiven] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   const client = useQueryClient();
@@ -27,73 +25,6 @@ function App() {
     onSuccess: () => {
       client.invalidateQueries(["updates"]);
       setUpdate("");
-    }
-  });
-
-  // Get all updates
-  const getUpdates = useQuery({
-    queryKey: ["updates"],
-    queryFn: () => {
-      if (!userTokenGiven) return [];
-      return updatesAPI.getUpdates().then(res => {
-        res.data.updates.forEach((update) => {
-          update.date = new Date(update.date);
-        });
-        return res.data.updates.toReversed();
-      });
-    },
-  });
-  useEffect(() => {
-    if (getUpdates.error?.response.status == 500) {
-      userRefresh(true);
-    }
-    setUpdates(getUpdates.data);
-  }, [getUpdates]);
-
-  // Either add or remove reaction based on its current state, and appropriately modify the reaction's appearance on the page
-  const addReaction = useMutation({
-    mutationFn: ({update, reaction}) => updatesAPI.addReaction(update._id, reaction),
-    retry: (count, error) => {
-      if (error.response.status == 500 && count < 1) {
-        userRefresh(false);
-        return true;
-      }
-      return false;
-    }
-  });
-
-  const removeReaction = useMutation({
-    mutationFn: ({update, reaction}) => updatesAPI.removeReaction(update._id, reaction),
-    retry: (count, error) => {
-      if (error.response.status == 500 && count < 1) {
-        userRefresh(false);
-        return true;
-      }
-      return false;
-    }
-  });
-
-  const toggleReaction = (update, reaction) => {
-    setUpdates(updates.map(up => {
-      if (update._id == up._id) {
-        var newReacted = up.reacted;
-        newReacted[reaction] = !up.reacted[reaction];
-        return {...up, reacted: newReacted}
-      }
-      else return up;
-    }));
-    if (update.reacted[reaction]) {
-      addReaction.mutate({update, reaction});
-    } else {
-      removeReaction.mutate({update, reaction});
-    }
-  }
-
-  // Delete update from its ID
-  const deleteUpdate = useMutation({
-    mutationFn: updatesAPI.deleteUpdate,
-    onSuccess: () => {
-      client.invalidateQueries(["updates"]);
     }
   });
 
@@ -117,7 +48,6 @@ function App() {
     mutationFn: () => userAPI.verify(),
     onSuccess: (res) => {
       if (res.data) {
-        setUserTokenGiven(true);
         client.invalidateQueries(["updates"]);
       }
       userRefresh();
@@ -129,7 +59,6 @@ function App() {
     mutationFn: () => userAPI.refresh(),
     onSuccess: (res) => {
       if (res.data) {
-        setUserTokenGiven(true);
         client.invalidateQueries(["updates"]);
       }
       else getUser();
@@ -140,7 +69,6 @@ function App() {
   const { mutate: getUser } = useMutation({
     mutationFn: () => userAPI.getUser(),
     onSuccess: () => {
-      setUserTokenGiven(true);
       client.invalidateQueries(["updates"]);
     },
   });
@@ -185,9 +113,9 @@ function App() {
           <button id="postUpdate" onClick={postUpdate.mutate} style={{marginBottom: "30px"}}>Post an update</button>
         </div>
       }
-      <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
+      <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
-        <UpdatesBox updates={updates} toggleReaction={toggleReaction} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} deleteUpdate={deleteUpdate} userVerifyFailed={userVerifyFailed} getUpdates={getUpdates} />
+        <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
       </div>}
     </div>
   )
