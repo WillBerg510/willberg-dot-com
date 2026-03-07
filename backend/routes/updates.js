@@ -82,7 +82,7 @@ router.patch("/react/:id", async (req, res) => {
       const decoded = jwt.verify(user_token, process.env.USER_ACCESS_TOKEN_SECRET);
       await Update.findOneAndUpdate(
         {_id: req.params.id},
-        {$push: {[`reactions.${reaction}`]: decoded.user}},
+        {$addToSet: {[`reactions.${reaction}`]: decoded.user}},
       );
       res.status(204).json({message: `Reaction ${reaction} added`});
     } catch (err) {
