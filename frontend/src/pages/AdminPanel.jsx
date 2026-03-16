@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from "react-router-dom";
 import adminAPI from "../api/AdminAPI.js";
@@ -6,29 +6,44 @@ import updatesAPI from "../api/UpdatesAPI.js";
 import projectsAPI from "../api/ProjectsAPI.js";
 import "../stylesheets/AdminPanel.css";
 
+const defaultProjectInput = {
+  name: "",
+  date: "",
+  description: "",
+  thumbnail: null,
+  gallery: [],
+  links: {},
+  groups: [],
+  region: "",
+  icon: "",
+  position: [0, 0],
+};
+
+const defaultProjectImagePreviews = {
+  thumbnail: null,
+  gallery: [],
+};
+
 const AdminPanel = () => {
   const [updateInput, setUpdateInput] = useState("");
-  const [projectInput, setProjectInput] = useState({
-    name: "",
-    year: 2020,
-    month: 1,
-    day: 1,
-    description: "",
-    thumbnail: null,
-    gallery: [],
-    links: {},
-    groups: [],
-    region: "",
-    icon: "",
-    position: [-1, -1],
-  });
+  const [projectInput, setProjectInput] = useState(defaultProjectInput);
+  const [projectImagePreviews, setProjectImagePreviews] = useState(defaultProjectImagePreviews);
   const [isAdmin, setIsAdmin] = useState(false);
-
+  const projectThumbnailRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     adminVerify();
   }, []);
+
+  const { mutate: submitProject, isSuccess: projectPosted, isPending: projectPostLoading, isError: projectPostError } = useMutation({
+    mutationFn: () => projectsAPI.postProject(projectInput),
+    onSuccess: () => {
+      setProjectInput(defaultProjectInput);
+      setProjectImagePreviews(defaultProjectImagePreviews);
+      projectThumbnailRef.current.value = null;
+    },
+  });
 
   // Add new update and clear update input
   const { mutate: postUpdate, isSuccess: updatePosted } = useMutation({
@@ -69,15 +84,59 @@ const AdminPanel = () => {
     setUpdateInput(e.target.value);
   }
 
+  const onProjectChange = (e) => {
+    setProjectInput({...projectInput, [e.target.name]: e.target.value});
+  }
+
   const onThumbnailUpload = (e) => {
     const file = e.target.files[0];
-    setProjectInput({...projectInput, thumbnail: file});
-    try {
-      projectsAPI.postProject(file).then(res => console.log(res));
-    } catch (err) {
-      
-    }
+    setProjectInput({...projectInput, [e.target.name]: file});
+    setProjectImagePreviews({...projectImagePreviews, thumbnail: URL.createObjectURL(file)});
   }
+
+  const onGalleryUpload = (e, index) => {
+    const file = e.target.files[0];
+    setProjectInput({...projectInput, gallery: projectInput.gallery.with(index, file)});
+    const galleryPreviews = projectImagePreviews.gallery;
+    galleryPreviews[index] = URL.createObjectURL(file);
+    setProjectImagePreviews({...projectImagePreviews, gallery: galleryPreviews});
+  }
+
+  const onArrayProjectChange = (e, index) => {
+    const projectArray = projectInput[e.target.name];
+    projectArray[index] = e.target.value;
+    setProjectInput({...projectInput, [e.target.name]: projectArray});
+  }
+
+  const onLinkChange = (e) => {
+    setProjectInput({...projectInput, links: {...projectInput.links, [e.target.name]: e.target.value}});
+  }
+
+  const addInputItem = (e) => {
+    setProjectInput({...projectInput, [e.target.name]: [...projectInput[e.target.name], ""]});
+  }
+
+  const addGalleryItem = (e) => {
+    setProjectInput({...projectInput, [e.target.name]: [...projectInput[e.target.name], null]});
+    setProjectImagePreviews({...projectImagePreviews, gallery: [...projectImagePreviews.gallery, null]})
+  }
+  
+  const deleteInputItem = (e, index) => {
+    setProjectInput({...projectInput, [e.target.name]: projectInput[e.target.name].filter((v, i) => i != index)});
+  }
+
+  const deleteGalleryItem = (e, index) => {
+    deleteInputItem(e, index);
+    setProjectImagePreviews({...projectImagePreviews, gallery: projectImagePreviews.gallery.filter((v, i) => i != index)});
+  }
+
+  const onPositionChange = (e) => {
+    setProjectInput({...projectInput, position: projectInput.position.with(e.target.name == "positionY", e.target.valueAsNumber)});
+  }
+
+  useEffect(() => {
+    console.log(projectInput);
+  }, [projectInput]);
 
   return (
     <>
@@ -93,10 +152,85 @@ const AdminPanel = () => {
             <button className="postUpdate" onClick={postUpdate}>Post an update</button>
             {updatePosted && <p>Update successfully posted</p>}
           </div>
-          <div className="enterProject">
-            <input name="thumbnail" type="file" accept="image/*" onChange={onThumbnailUpload} />
+          <div className="enterProject" style={{height: "500px", overflowY: "scroll"}}>
+            <h2>Upload new project</h2>
+            <p>Name</p>
+            <input name="name" type="text" value={projectInput.name} onChange={onProjectChange} />
+            <p>Date</p>
+            <input name="date" type="date" value={projectInput.date} onChange={onProjectChange} />
+            <p>Description</p>
+            <textarea name="description" onChange={onProjectChange} value={projectInput.description} cols="50" rows="5" />
+            <p>Thumbnail</p>
+            {projectImagePreviews.thumbnail && <img height="100" src={projectImagePreviews.thumbnail} />}<p />
+            <label htmlFor="thumbnail" className="fileUpload">Upload Image</label>
+            <input name="thumbnail" id="thumbnail" type="file" accept="image/*" ref={projectThumbnailRef} onChange={onThumbnailUpload} />
+            <p>Gallery Images</p>
+            <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+              {projectInput.gallery.map((file, index) => 
+                <div key={`gallery${index}`}>
+                  {projectImagePreviews.gallery[index] && <img height="100" src={projectImagePreviews.gallery[index]} />}<p />
+                  <label htmlFor={`gallery${index}`} className="fileUpload">Upload Image</label>
+                  <input name="gallery" id={`gallery${index}`} type="file" accept="image/*" onChange={(e) => onGalleryUpload(e, index)} /><p />
+                  <button name="gallery" onClick={(e) => deleteGalleryItem(e, index)}>Delete</button>
+                </div>
+              )}
+              <button onClick={addGalleryItem} style={{width: "50px", height: "50px", fontSize: "16px"}} name="gallery">Add</button>
+            </div>
+            <p>Links</p>
+            <label htmlFor="youtube">YouTube  </label>
+            <input name="youtube" id="youtube" type="text" onChange={onLinkChange} value={projectInput.links.youtube ? projectInput.links.youtube : ""} /><p />
+            <label htmlFor="spotify">Spotify  </label>
+            <input name="spotify" id="spotify" type="text" onChange={onLinkChange} value={projectInput.links.spotify ? projectInput.links.spotify : ""} /><p />
+            <label htmlFor="generalLink">General Link  </label>
+            <input name="link" id="generalLink" type="text" onChange={onLinkChange} value={projectInput.links.link ? projectInput.links.link : ""} /><p />
+            <p>Groups</p>
+            <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+              {projectInput.groups.map((group, index) =>
+                <div key={`group${index}`}>
+                  <select name="groups" value={projectInput.groups[index]} type="text" onChange={e => onArrayProjectChange(e, index)}>
+                    <option value=""></option>
+                    <option value="music">Music</option>
+                    <option value="art">Art</option>
+                    <option value="videos">Videos</option>
+                    <option value="programs">Programs</option>
+                    <option value="photos">Photos</option>
+                    <option value="cartoons">Cartoons</option>
+                    <option value="covers">Covers & Parodies</option>
+                    <option value="teamProjects">Team Projects</option>
+                    <option value="originals">Original Songs</option>
+                    <option value="lunacyToday">Lunacy Today</option>
+                    <option value="december">December</option>
+                  </select><p />
+                  <button name="groups" onClick={(e) => deleteInputItem(e, index)}>Delete</button>
+                </div>
+              )}
+              <button onClick={addInputItem} style={{width: "50px", height: "50px", fontSize: "16px"}} name="groups">Add</button>
+            </div>
+            <p>Region</p>
+            <select name="region" type="text" onChange={onProjectChange} value={projectInput.region}>
+              <option value=""></option>
+              <option value="beach">Palm Tree Paradise</option>
+              <option value="city">Commute City</option>
+              <option value="club">The Rage Room</option>
+            </select>
+            <p>Icon</p>
+            <select name="icon" type="text" onChange={onProjectChange} value={projectInput.icon}>
+              <option value=""></option>
+              <option value="music">Music</option>
+              <option value="art">Art</option>
+              <option value="video">Video</option>
+              <option value="interactive">Interactive</option>
+              <option value="photos">Photos</option>
+            </select>
+            <p>Position</p>
+            <input name="positionX" min="0" style={{width: "50px"}} type="number" onChange={onPositionChange} value={projectInput.position[0]} />
+            <input name="positionY" min="0" style={{width: "50px"}} type="number" onChange={onPositionChange} value={projectInput.position[1]} />
+            <p />
+            {projectPostLoading && <p>Uploading project...</p>}
+            {projectPosted && <p>Project successfully posted</p>}
+            {projectPostError && <p>Error uploading project</p>}
+            <button onClick={submitProject}>Submit</button>
           </div>
-          <img src={"https://s3.us-east-1.amazonaws.com/willbergforever.com-files-358140140122-us-east-1-an/21b92b7e-3a34-4264-a382-bbb28ecd9aeb.png"} />
         </div>
       }
     </>

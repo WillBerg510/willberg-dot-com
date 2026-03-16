@@ -2,6 +2,7 @@ const { S3Client } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
 const { createReadStream } = require("fs");
 const path = require("path");
+const { fileTypeFromFile } = require("file-type");
 
 require("dotenv").config();
 
@@ -16,6 +17,7 @@ const s3Client = new S3Client({
 const uploadToS3 = async (file) => {
   try {
     const fileName = `${crypto.randomUUID()}${path.extname(file.name)}`;
+    const fileType = await fileTypeFromFile(file.path);
 
     const upload = new Upload({
       client: s3Client,
@@ -23,7 +25,9 @@ const uploadToS3 = async (file) => {
         Bucket: process.env.S3_BUCKET,
         Key: fileName,
         Body: createReadStream(file.path),
+        ContentType: fileType.mime,
       },
+      queueSize: 10,
     });
 
     await upload.done();

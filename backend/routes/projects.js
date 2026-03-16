@@ -5,31 +5,37 @@ const auth = require("../utils/auth.js");
 const { uploadToS3 } = require("../utils/s3Client.js");
 
 router.post("/", async (req, res) => {
-  //const { name, date, description, thumbnail, links, groups, region, icon, position } = req.body;
+  const { name, date, description, links, groups, region, icon, position } = req.fields;
   try {
-    const thumbnailName = await uploadToS3(req.files?.thumbnail);
-    const newProject = await Project.create({
-      name: "a",
-      date: new Date(),
-      region: "e",
-      icon: "i",
-      position: [0, 0],
-      reactions: {},
-      thumbnail: `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${thumbnailName}`,
+    const imageURLs = {
+      thumbnail: null,
+      gallery: [],
+    };
+    const promises = Object.entries(req.files).map(async ([key, image]) => {
+      const imageName = await uploadToS3(image);
+      const imageURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${imageName}`;
+      if (key == "thumbnail") {
+        imageURLs.thumbnail = imageURL;
+      } else if (key.startsWith("gallery")) {
+        imageURLs.gallery.push(imageURL);
+      }
+      return imageURL;
     });
-    /*const newProject = await Project.create({
+    await Promise.all(promises);
+    const newProject = await Project.create({
       name,
       date,
       description,
-      thumbnail,
+      thumbnail: imageURLs.thumbnail,
+      gallery: imageURLs.gallery,
       links,
-      groups,
+      groups: groups.split(','),
       region,
       icon,
-      position,
+      position: position.split(','),
       reactions: {},
       awards: {},
-    });*/
+    });
     res.status(201).json({Project: newProject});
   } catch (err) {
     console.log(err);

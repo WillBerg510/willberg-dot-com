@@ -14,6 +14,7 @@ const project = new mongoose.Schema({
   },
   thumbnail: {
     type: String,
+    required: true,
   },
   gallery: {
     type: Array,
