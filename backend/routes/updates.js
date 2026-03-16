@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const cors = require('cors');
 const Update = require("../models/Update.js");
 const auth = require("../utils/auth.js");
 const jwt = require('jsonwebtoken');

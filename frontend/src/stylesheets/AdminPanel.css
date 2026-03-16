@@ -1,0 +1,11 @@
+.enterUpdate {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  align-items: center;
+}
+
+.postUpdate {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
