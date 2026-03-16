@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Project = require("../models/Project.js");
 const auth = require("../utils/auth.js");
-const jwt = require('jsonwebtoken');
-const uploadFile = require("../utils/fileUpload.js");
+const { uploadToS3 } = require("../utils/s3Client.js");
 
-router.post("/", uploadFile.single("thumbnail"), async (req, res) => {
+router.post("/", async (req, res) => {
   //const { name, date, description, thumbnail, links, groups, region, icon, position } = req.body;
   try {
+    const thumbnailName = await uploadToS3(req.files?.thumbnail);
     const newProject = await Project.create({
       name: "a",
       date: new Date(),
@@ -15,7 +15,7 @@ router.post("/", uploadFile.single("thumbnail"), async (req, res) => {
       icon: "i",
       position: [0, 0],
       reactions: {},
-      thumbnail: `${req.protocol}://${req.hostname}${process.env.DEV_MODE ? ":" + process.env.PORT || 5050 : ""}/image_uploads/${req.file.filename}`,
+      thumbnail: `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${thumbnailName}`,
     });
     /*const newProject = await Project.create({
       name,

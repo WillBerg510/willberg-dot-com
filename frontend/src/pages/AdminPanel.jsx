@@ -96,6 +96,7 @@ const AdminPanel = () => {
           <div className="enterProject">
             <input name="thumbnail" type="file" accept="image/*" onChange={onThumbnailUpload} />
           </div>
+          <img src={"https://s3.us-east-1.amazonaws.com/willbergforever.com-files-358140140122-us-east-1-an/21b92b7e-3a34-4264-a382-bbb28ecd9aeb.png"} />
         </div>
       }
     </>
