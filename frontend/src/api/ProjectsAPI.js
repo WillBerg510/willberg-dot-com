@@ -8,6 +8,10 @@ const projectsAPI = {
         value.forEach((image, index) => {
           form.append(`gallery${index}`, image);
         })
+      } else if (key == "links") {
+        Object.entries(value).forEach(([linkType, link]) => {
+          form.append(linkType, link);
+        });
       } else {
         form.append(key, value);
       }
@@ -18,6 +22,10 @@ const projectsAPI = {
       },
     });
   },
+
+  getProject: async (project_id) => {
+    return await API.get(`/projects/${project_id}`);
+  }
 };
 
 export default projectsAPI;

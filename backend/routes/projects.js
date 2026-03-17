@@ -6,20 +6,19 @@ const { uploadToS3 } = require("../utils/s3Client.js");
 const formidable = require('express-formidable');
 
 router.post("/", auth, formidable(), async (req, res) => {
-  console.log(req);
-  const { name, date, description, links, groups, region, icon, position } = req.fields;
+  const { name, date, description, youtube, spotify, link, groups, region, icon, position } = req.fields;
   try {
     const imageURLs = {
       thumbnail: null,
       gallery: [],
     };
-    const promises = Object.entries(req.files).map(async ([key, image]) => {
+    const promises = Object.entries(req.files).map(async ([key, image], index) => {
       const imageName = await uploadToS3(image);
       const imageURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${imageName}`;
       if (key == "thumbnail") {
         imageURLs.thumbnail = imageURL;
       } else if (key.startsWith("gallery")) {
-        imageURLs.gallery.push(imageURL);
+        imageURLs.gallery[index] = imageURL;
       }
       return imageURL;
     });
@@ -30,7 +29,11 @@ router.post("/", auth, formidable(), async (req, res) => {
       description,
       thumbnail: imageURLs.thumbnail,
       gallery: imageURLs.gallery,
-      links,
+      links: {
+        youtube,
+        spotify,
+        link,
+      },
       groups: groups.split(','),
       region,
       icon,
@@ -42,6 +45,19 @@ router.post("/", auth, formidable(), async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).json({error: `Error adding project`});
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  try {
+    const project = await Project.findById(req.params.id);
+    if (!project) {
+      res.status(404).json({error: "Requested project does not exist"});
+    } else {
+      res.status(200).json({project});
+    }
+  } catch (err) {
+    res.status(500).json({error: "Error getting project"});
   }
 });
 

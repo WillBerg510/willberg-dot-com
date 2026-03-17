@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import adminAPI from "../api/AdminAPI.js";
 import updatesAPI from "../api/UpdatesAPI.js";
 import projectsAPI from "../api/ProjectsAPI.js";
+import projectGroups from "../constants/projectGroups.js";
 import "../stylesheets/AdminPanel.css";
 
 const defaultProjectInput = {
@@ -185,17 +186,9 @@ const AdminPanel = () => {
                 <div key={`group${index}`}>
                   <select name="groups" value={projectInput.groups[index]} type="text" onChange={e => onArrayProjectChange(e, index)}>
                     <option value=""></option>
-                    <option value="music">Music</option>
-                    <option value="art">Art</option>
-                    <option value="videos">Videos</option>
-                    <option value="programs">Programs</option>
-                    <option value="photos">Photos</option>
-                    <option value="cartoons">Cartoons</option>
-                    <option value="covers">Covers & Parodies</option>
-                    <option value="teamProjects">Team Projects</option>
-                    <option value="originals">Original Songs</option>
-                    <option value="lunacyToday">Lunacy Today</option>
-                    <option value="december">December</option>
+                    {Object.entries(projectGroups).map(([key, value]) =>
+                      <option value={key} >{value}</option>
+                    )}
                   </select><p />
                   <button name="groups" onClick={(e) => deleteInputItem(e, index)}>Delete</button>
                 </div>

@@ -1,0 +1,92 @@
+.projectWindow {
+  max-width: 1000px;
+  width: 90%;
+  height: auto;
+  display: flex;
+  position: relative;
+  background-color: lightgreen;
+  border-radius: 65px;
+  aspect-ratio: 2;
+  justify-content: center;
+  padding: 30px;
+}
+
+.projectInfo {
+  display: flex;
+}
+
+.leftProjectColumn {
+  width: 45%;
+  text-align: left;
+}
+
+.rightProjectColumn {
+  width: 52.5%;
+  margin-left: 2.5%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.projectThumbnail {
+  width: 100%;
+  border-radius: 35px;
+}
+
+.projectName {
+  font-size: 32px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.projectDate {
+  font-size: 20px;
+  font-family: wbf2;
+  font-weight: 500;
+  margin: 0;
+}
+
+.projectGroup {
+  margin: 0;
+}
+
+.projectDescription {
+  margin: 0;
+}
+
+.projectGallery {
+  width: 100%;
+  overflow-x: scroll;
+  scrollbar-width: none;
+  height: 40%;
+  display: flex;
+  gap: 5px;
+}
+
+.projectGalleryImage {
+  width: auto;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.projectLinks {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.projectLink {
+  font-size: 20px;
+}
+
+.projectLinkActive {
+  background-color: lightcoral;
+}
+
+.projectLinkInactive {
+  background-color: lightgray;
+  pointer-events: none;
+}

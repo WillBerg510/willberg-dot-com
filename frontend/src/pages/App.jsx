@@ -6,10 +6,12 @@ import adminAPI from "../api/AdminAPI.js";
 import userAPI from "../api/UserAPI.js";
 import UpdatesBox from '../components/UpdatesBox.jsx';
 import Island from '../components/Island.jsx';
+import Project from '../components/Project.jsx';
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
+  const [projectOpen, setProjectOpen] = useState(true);
   const client = useQueryClient();
 
   // Verify whether the user's access tokens are valid upon page load, from which further setup actions are performed
@@ -95,6 +97,9 @@ function App() {
       <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
         <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
+      </div>}
+      {projectOpen && <div className="windowOnTop" onClick={() => setProjectOpen(false)}>
+        <Project project_id={"69b8aa4ba84f272b63cd85b1"} />
       </div>}
       <Island />
     </div>
