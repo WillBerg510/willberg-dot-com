@@ -56,7 +56,7 @@ const Project = (props) => {
     }
   }
 
-  const { data: project, isLoading: projectLoading } = useQuery({
+  const { data: project, isLoading: projectLoading, isSuccess: projectLoaded } = useQuery({
     queryKey: [`project-${project_id}`],
     queryFn: () => {
       return projectsAPI.getProject(project_id).then(res => {
@@ -76,7 +76,7 @@ const Project = (props) => {
         getReactionStates(projectReactions);
       }
     }
-  }, [project]);
+  }, [projectLoaded]);
 
   const projectLinkClicked = (linkType) => {
     window.open(project.links[linkType], "_blank");
