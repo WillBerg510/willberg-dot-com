@@ -28,6 +28,7 @@ const Project = (props) => {
   return (
     <div className="projectWindow" onClick={receiveClick}>
       {projectLoading && <p>Loading...</p>}
+      {!projectLoading && !project && <p>Unable to load project.</p>}
       {project && <div className="projectInfo">
         <div className="leftProjectColumn">
           <img src={project.thumbnail} className="projectThumbnail" />
