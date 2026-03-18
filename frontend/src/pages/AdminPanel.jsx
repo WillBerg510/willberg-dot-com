@@ -5,6 +5,7 @@ import adminAPI from "../api/AdminAPI.js";
 import updatesAPI from "../api/UpdatesAPI.js";
 import projectsAPI from "../api/ProjectsAPI.js";
 import projectGroups from "../constants/projectGroups.js";
+import regions from "../constants/regions.js";
 import "../stylesheets/AdminPanel.css";
 
 const defaultProjectInput = {
@@ -201,9 +202,15 @@ const AdminPanel = () => {
             <p>Region</p>
             <select name="region" type="text" onChange={onProjectChange} value={projectInput.region}>
               <option value=""></option>
-              <option value="beach">Palm Tree Paradise</option>
-              <option value="city">Commute City</option>
-              <option value="club">The Rage Room</option>
+              {regions.filter(region => region.holdsProjects).map(region =>
+                <>
+                  {region.divisions
+                    ? region.divisions.map(division =>
+                      <option key={`${region.code}${division.code}`} value={`${region.code}-${division.code}`}>{region.name} - {division.name}</option>
+                    ) : <option key={region.code} value={region.code}>{region.name}</option>
+                  }
+                </>
+              )}
             </select>
             <p>Icon</p>
             <select name="icon" type="text" onChange={onProjectChange} value={projectInput.icon}>
