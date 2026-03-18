@@ -92,6 +92,9 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
           await deleteFromS3(project.thumbnail.split(process.env.S3_BUCKET + "/")[1]);
           imageURLs.thumbnail = imageURL;
         } else if (key.startsWith("gallery")) {
+          if (project.gallery[key.split("gallery")[1]]) {
+            await deleteFromS3(project.gallery[key.split("gallery")[1]].split(process.env.S3_BUCKET + "/")[1]);
+          }
           imageURLs.gallery[key.split("gallery")[1]] = imageURL;
         }
         return imageURL;
