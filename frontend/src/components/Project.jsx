@@ -106,8 +106,8 @@ const Project = (props) => {
             year: "numeric",
             timeZone: "UTC",
           }).toUpperCase()}</p>
-          {project.groups.map(group => 
-            {group != "" && <p key={group} className="projectGroup">{projectGroups[group].toUpperCase()}</p>}
+          {project.groups?.map(group => 
+            <p key={group} className="projectGroup">{projectGroups[group]?.toUpperCase()}</p>
           )}
           {Object.keys(reactionStates).length > 0 && <div className="projectReactionsBar">
             {Object.entries(allReactions).map(([reactionName, reactionEmoji]) => 

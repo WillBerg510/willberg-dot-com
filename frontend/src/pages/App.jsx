@@ -8,6 +8,7 @@ import userAPI from "../api/UserAPI.js";
 import UpdatesBox from '../components/UpdatesBox.jsx';
 import Island from '../components/Island.jsx';
 import Project from '../components/Project.jsx';
+import WillBergLogo from '../assets/WillBergLogo.png';
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -99,7 +100,7 @@ function App() {
           <button style={{margin: "0"}} onClick={signOut}>Sign Out</button>
         </div>
       }
-      <h1 className="mainHeading">WILL BERG</h1>
+      <img className="mainHeading" src={WillBergLogo} />
       <h2 className="mainSubtitle">AND THE WEBSITE ON THE INTERNET</h2>
       <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={false} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>

@@ -17,10 +17,9 @@ h1, h2, h3, p {
 }
 
 .mainHeading {
-  font-size: 75px;
-  letter-spacing: 3px;
-  margin: 0;
-  line-height: 55px;
+  margin: -25px 0 -25px 0;
+  height: 200px;
+  object-fit: contain;
 }
 
 .mainSubtitle {
