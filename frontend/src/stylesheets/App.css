@@ -18,6 +18,8 @@ h1, h2, h3, p {
 
 .mainHeading {
   margin: -25px 0 -25px 0;
+  pointer-events: none;
+  user-select: none;
   height: 200px;
   object-fit: contain;
 }
