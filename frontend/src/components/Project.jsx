@@ -11,6 +11,7 @@ const Project = (props) => {
   const [reactionStates, setReactionStates] = useState({});
   const [reactionNums, setReactionNums] = useState({});
   const [allReactions, setAllReactions] = useState(projectReactions);
+  const [imagesReady, setImagesReady] = useState(0);
   const navigate = useNavigate();
 
   const getReactionStates = (reactions) => {
@@ -92,20 +93,24 @@ const Project = (props) => {
     navigate(`/admin?editProject=${project_id}`);
   };
 
+  const onImageReady = () => {
+    setImagesReady(prev => prev + 1);
+  }
+
   return (
-    <div className="projectWindow" onClick={receiveClick}>
+    <div style={imagesReady > project?.gallery?.length ? {display: "flex"} : {display: "none"}} className="projectWindow" onClick={receiveClick}>
       {projectLoading && <p>Loading...</p>}
       {!projectLoading && !project && <p>Unable to load project.</p>}
       {project && <div className="projectInfo">
         <div className="leftProjectColumn">
-          <img src={project.thumbnail} className="projectThumbnail" />
+          <img src={project.thumbnail} className="projectThumbnail" onLoad={onImageReady} />
           <h1 className="projectName">{project.name}</h1>
           <p className="projectDate">{project.date.toLocaleString("en-US", {
-            month: "short",
+            month: "long",
             day: "numeric",
             year: "numeric",
             timeZone: "UTC",
-          }).toUpperCase()}</p>
+          })}</p>
           {project.groups?.map(group => 
             <p key={group} className="projectGroup">{projectGroups[group]?.toUpperCase()}</p>
           )}
@@ -128,7 +133,7 @@ const Project = (props) => {
           <p className="projectDescription">{project.description}</p>
           <div className="projectGallery">
             {project.gallery.map((image, index) =>
-              <img className="projectGalleryImage" key={`gallery${index}`} src={image} />
+              <img className="projectGalleryImage" key={`gallery${index}`} src={image} onLoad={onImageReady} />
             )}
           </div>
           <div className="projectLinks">

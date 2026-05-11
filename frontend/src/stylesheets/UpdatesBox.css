@@ -68,17 +68,6 @@
   animation: glideIn 1s ease-in-out;
 }
 
-@keyframes glideIn {
-  0% {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: 0;
-  }
-}
-
 .updateRow {
   display: flex;
   align-items: center;
@@ -128,17 +117,19 @@
 .updateDate {
   margin: 7px 0px -3px 12px;
   color: rgba(0, 0, 0, 0.6);
-  font-family: wbf2;
-  font-size: 13px;
+  font-family: wbf3;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .updateText {
-  margin: 0px 12px 3px 12px;
-  font-size: 17px;
-  line-height: 18.5px;
+  margin: 2px 12px 4px 12px;
+  font-size: 16px;
+  line-height: 18px;
   letter-spacing: 0.4px;
   overflow-wrap: anywhere;
+  font-family: wbf3;
+  font-weight: 500;
   white-space: pre-wrap;
 }
 
@@ -177,16 +168,17 @@
 }
 
 .reactionEmoji {
-  margin: 0px 5px 1px 0px;
-  font-family: wbf2;
-  font-size: 12px;
+  margin: 0px 3px 1px 0px;
+  font-family: wbf3;
+  font-size: 13px;
 }
 
 .reactionNumber {
-  margin: 3px 0px 0px 0px;
-  font-family: wbf2;
-  font-weight: 500;
-  font-size: 14px;
+  margin: 0px 3px 1px 1px;
+  min-width: 10px;
+  font-family: wbf3;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .reactionSelected, .reactionSelected:hover {

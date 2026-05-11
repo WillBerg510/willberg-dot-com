@@ -22,7 +22,7 @@ const ProjectIcon = (props) => {
       position: "absolute",
       left: `calc(${(project.position[0] / 100) * fullX}px - 80px)`,
       top: `calc(${(project.position[1] / 100) * fullY}px - 30px)`,
-      '--glide-delay': `${Math.random() * 0.15}s`
+      '--glide-delay': `${Math.random() * 0.08}s`
     }}>
       <img className="projectIcon" src={icons[project.icon] || MusicIcon} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={() => setOpenProject(project._id)}/>
       {hovered &&
