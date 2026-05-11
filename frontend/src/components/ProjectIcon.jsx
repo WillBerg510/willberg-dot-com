@@ -1,4 +1,17 @@
 import { useState } from 'react';
+import MusicIcon from '../assets/Music Icon.png';
+import InteractiveIcon from '../assets/Interactive Icon.png';
+import VideoIcon from '../assets/Video Icon.png';
+import ArtIcon from '../assets/Art Icon.png';
+import PhotosIcon from '../assets/Photos Icon.png';
+
+const icons = {
+  "music": MusicIcon,
+  "interactive": InteractiveIcon,
+  "video": VideoIcon,
+  "art": ArtIcon,
+  "photos": PhotosIcon,
+}
 
 const ProjectIcon = (props) => {
   const { project, fullX, fullY, setOpenProject } = props;
@@ -9,10 +22,9 @@ const ProjectIcon = (props) => {
       position: "absolute",
       left: `calc(${(project.position[0] / 100) * fullX}px - 80px)`,
       top: `calc(${(project.position[1] / 100) * fullY}px - 30px)`,
+      '--glide-delay': `${Math.random() * 0.15}s`
     }}>
-      <div className="projectIcon" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={() => setOpenProject(project._id)}>
-        <h2>{project.icon.toUpperCase()}</h2>
-      </div>
+      <img className="projectIcon" src={icons[project.icon] || MusicIcon} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onClick={() => setOpenProject(project._id)}/>
       {hovered &&
         <div className="projectTooltip">
           {project.name.toUpperCase()}

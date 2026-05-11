@@ -6,6 +6,7 @@ const RegionName = (props) => {
       position: "absolute",
       left: `calc(${(region.position[0] / 100) * fullX}px - 80px)`,
       top: `calc(${(region.position[1] / 100) * fullY}px - 30px)`,
+      '--glide-delay': `${Math.random() * 0.15}s`
     }}>
       <h2>{region.name}</h2>
       <div className={
