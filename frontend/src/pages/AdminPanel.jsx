@@ -144,7 +144,7 @@ const AdminPanel = () => {
   }
 
   const onGalleryUpload = (e, index) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) file = null;
     setProjectInput({...projectInput, gallery: projectInput.gallery.with(index, file)});
     const galleryPreviews = projectFilePreviews.gallery;
