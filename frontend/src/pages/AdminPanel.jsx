@@ -137,23 +137,26 @@ const AdminPanel = () => {
   }
 
   const onThumbnailUpload = (e) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
+    if (!file) file = null;
     setProjectInput({...projectInput, [e.target.name]: file});
-    setProjectFilePreviews({...projectFilePreviews, thumbnail: URL.createObjectURL(file)});
+    setProjectFilePreviews({...projectFilePreviews, thumbnail: file ? URL.createObjectURL(file) : null});
   }
 
   const onGalleryUpload = (e, index) => {
     const file = e.target.files[0];
+    if (!file) file = null;
     setProjectInput({...projectInput, gallery: projectInput.gallery.with(index, file)});
     const galleryPreviews = projectFilePreviews.gallery;
-    galleryPreviews[index] = URL.createObjectURL(file);
+    galleryPreviews[index] = file ? URL.createObjectURL(file) : null;
     setProjectFilePreviews({...projectFilePreviews, gallery: galleryPreviews});
   }
 
   const onContentUpload = (e) => {
-    const file = e.target.files[0];
+    let file = e.target.files[0];
+    if (!file) file = null;
     setProjectInput({...projectInput, [e.target.name]: file});
-    setProjectFilePreviews({...projectFilePreviews, content: URL.createObjectURL(file), deleteContent: false});
+    setProjectFilePreviews({...projectFilePreviews, content: file ? URL.createObjectURL(file) : null});
   }
 
   const onArrayProjectChange = (e, index) => {
