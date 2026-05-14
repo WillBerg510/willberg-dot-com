@@ -20,21 +20,26 @@ const defaultProjectInput = {
   region: "",
   icon: "",
   position: [0, 0],
+  contentType: "",
+  content: null,
   deleteGallery: [],
+  deleteContent: false,
 };
 
-const defaultProjectImagePreviews = {
+const defaultProjectFilePreviews = {
   thumbnail: null,
   gallery: [],
+  content: null,
 };
 
 const AdminPanel = () => {
   const [updateInput, setUpdateInput] = useState("");
   const [projectInput, setProjectInput] = useState(defaultProjectInput);
-  const [projectImagePreviews, setProjectImagePreviews] = useState(defaultProjectImagePreviews);
+  const [projectFilePreviews, setProjectFilePreviews] = useState(defaultProjectFilePreviews);
   const [isAdmin, setIsAdmin] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState();
   const projectThumbnailRef = useRef(null);
+  const projectContentRef = useRef(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const editProject = searchParams.get("editProject");
@@ -47,7 +52,7 @@ const AdminPanel = () => {
   const { mutate: getProjectToEdit } = useMutation({
     mutationFn: () => projectsAPI.getProjectInfo(editProject),
     onSuccess: async (res) => {
-      const { name, date, description, thumbnail, gallery, links, groups, specialReaction, region, icon, position } = res.data.project;
+      const { name, date, description, thumbnail, gallery, links, groups, specialReaction, region, icon, position, contentType, content } = res.data.project;
       setProjectInput({
         name,
         date: new Date(date).toISOString().slice(0, 10),
@@ -60,11 +65,15 @@ const AdminPanel = () => {
         region,
         icon,
         position,
+        contentType,
+        content,
         deleteGallery: [],
+        deleteContent: false,
       });
-      setProjectImagePreviews({
+      setProjectFilePreviews({
         thumbnail,
         gallery,
+        content,
       });
     },
   });
@@ -78,8 +87,9 @@ const AdminPanel = () => {
     mutationFn: () => projectsAPI.postProject(projectInput),
     onSuccess: () => {
       setProjectInput(defaultProjectInput);
-      setProjectImagePreviews(defaultProjectImagePreviews);
+      setProjectFilePreviews(defaultProjectFilePreviews);
       projectThumbnailRef.current.value = null;
+      projectContentRef.current.value = null;
     },
   });
 
@@ -129,15 +139,21 @@ const AdminPanel = () => {
   const onThumbnailUpload = (e) => {
     const file = e.target.files[0];
     setProjectInput({...projectInput, [e.target.name]: file});
-    setProjectImagePreviews({...projectImagePreviews, thumbnail: URL.createObjectURL(file)});
+    setProjectFilePreviews({...projectFilePreviews, thumbnail: URL.createObjectURL(file)});
   }
 
   const onGalleryUpload = (e, index) => {
     const file = e.target.files[0];
     setProjectInput({...projectInput, gallery: projectInput.gallery.with(index, file)});
-    const galleryPreviews = projectImagePreviews.gallery;
+    const galleryPreviews = projectFilePreviews.gallery;
     galleryPreviews[index] = URL.createObjectURL(file);
-    setProjectImagePreviews({...projectImagePreviews, gallery: galleryPreviews});
+    setProjectFilePreviews({...projectFilePreviews, gallery: galleryPreviews});
+  }
+
+  const onContentUpload = (e) => {
+    const file = e.target.files[0];
+    setProjectInput({...projectInput, [e.target.name]: file});
+    setProjectFilePreviews({...projectFilePreviews, content: URL.createObjectURL(file), deleteContent: false});
   }
 
   const onArrayProjectChange = (e, index) => {
@@ -156,7 +172,7 @@ const AdminPanel = () => {
 
   const addGalleryItem = (e) => {
     setProjectInput({...projectInput, [e.target.name]: [...projectInput[e.target.name], null]});
-    setProjectImagePreviews({...projectImagePreviews, gallery: [...projectImagePreviews.gallery, null]})
+    setProjectFilePreviews({...projectFilePreviews, gallery: [...projectFilePreviews.gallery, null]})
   }
   
   const deleteInputItem = (e, index) => {
@@ -164,8 +180,14 @@ const AdminPanel = () => {
   }
 
   const deleteGalleryItem = (e, index) => {
-    setProjectImagePreviews({...projectImagePreviews, gallery: projectImagePreviews.gallery.filter((v, i) => i != index)});
+    setProjectFilePreviews({...projectFilePreviews, gallery: projectFilePreviews.gallery.filter((v, i) => i != index)});
     setProjectInput({...projectInput, [e.target.name]: projectInput[e.target.name].filter((v, i) => i != index), deleteGallery: [...projectInput.deleteGallery, index]});
+  }
+
+  const doDeleteContent = () => {
+    setProjectFilePreviews({...projectFilePreviews, content: null});
+    setProjectInput({...projectInput, content: null, deleteContent: true});
+    projectContentRef.current.value = null;
   }
 
   const onPositionChange = (e) => {
@@ -215,14 +237,14 @@ const AdminPanel = () => {
             <p>Description</p>
             <textarea name="description" onChange={onProjectChange} value={projectInput.description} cols="50" rows="5" />
             <p>Thumbnail</p>
-            {projectImagePreviews.thumbnail && <img height="100" src={projectImagePreviews.thumbnail} />}<p />
+            {projectFilePreviews.thumbnail && <img height="100" src={projectFilePreviews.thumbnail} />}<p />
             <label htmlFor="thumbnail" className="fileUpload">Upload Image</label>
             <input name="thumbnail" id="thumbnail" type="file" accept="image/*" ref={projectThumbnailRef} onChange={onThumbnailUpload} />
             <p>Gallery Images</p>
             <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
               {projectInput.gallery.map((file, index) => 
                 <div key={`gallery${index}`}>
-                  {projectImagePreviews.gallery[index] && <img height="100" src={projectImagePreviews.gallery[index]} />}<p />
+                  {projectFilePreviews.gallery[index] && <img height="100" src={projectFilePreviews.gallery[index]} />}<p />
                   <label htmlFor={`gallery${index}`} className="fileUpload">Upload Image</label>
                   <input name="gallery" id={`gallery${index}`} type="file" accept="image/*" onChange={(e) => onGalleryUpload(e, index)} /><p />
                   <button name="gallery" onClick={(e) => deleteGalleryItem(e, index)}>Delete</button>
@@ -279,6 +301,24 @@ const AdminPanel = () => {
             <p>Position</p>
             <input name="positionX" min="0" style={{width: "50px"}} type="number" onChange={onPositionChange} value={projectInput.position[0]} />
             <input name="positionY" min="0" style={{width: "50px"}} type="number" onChange={onPositionChange} value={projectInput.position[1]} />
+            <p>Content Type</p>
+            <select name="contentType" type="text" onChange={onProjectChange} value={projectInput.contentType}>
+              <option value=""></option>
+              <option value="audio">Audio</option>
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+            <p>Content</p>
+            {projectFilePreviews.content && (
+              projectInput.contentType == "image" ? <img height="200" src={projectFilePreviews.content} />
+              : projectInput.contentType == "audio" ? <audio controls src={projectFilePreviews.content} />
+              : projectInput.contentType == "video" ? <video controls height="200" src={projectFilePreviews.content} />
+              : null
+            )}
+            {projectFilePreviews.content && <button onClick={doDeleteContent}>Delete</button>}
+            <p />
+            <label htmlFor="content" className="fileUpload">Upload Content</label>
+            <input name="content" id="content" type="file" ref={projectContentRef} onChange={onContentUpload} />
             <p />
             {(projectPostLoading || projectEditLoading) && <p>Uploading project...</p>}
             {(projectPosted || projectEdited) && <p>Project successfully uploaded</p>}

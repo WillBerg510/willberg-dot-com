@@ -7,7 +7,7 @@ import projectGroups from "../constants/projectGroups.js";
 import '../stylesheets/Project.css';
 
 const Project = (props) => {
-  const { project_id, userRefresh, isAdmin } = props;
+  const { project_id, userRefresh, isAdmin, setOpenPlayer, closeWindows } = props;
   const [reactionStates, setReactionStates] = useState({});
   const [reactionNums, setReactionNums] = useState({});
   const [allReactions, setAllReactions] = useState(projectReactions);
@@ -95,7 +95,12 @@ const Project = (props) => {
 
   const onImageReady = () => {
     setImagesReady(prev => prev + 1);
-  }
+  };
+
+  const onPlayerOpen = () => {
+    closeWindows();
+    setOpenPlayer(project_id);
+  };
 
   return (
     <div style={imagesReady > project?.gallery?.length ? {display: "flex"} : {display: "none"}} className="projectWindow" onClick={receiveClick}>
@@ -147,6 +152,13 @@ const Project = (props) => {
                 {linkType.toUpperCase()}
               </button>
             )}
+            <button
+              disabled={!project.content}
+              className={`projectLink projectLink${project.content ? "Active" : "Inactive"}`}
+              onClick={onPlayerOpen}
+            >
+              {project.icon == "photos" || project.icon == "art" ? "VIEW" : "PLAY"}
+            </button>
           </div>
         </div>
       </div>}

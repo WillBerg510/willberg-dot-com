@@ -6,9 +6,9 @@ const { uploadToS3, deleteFromS3 } = require("../utils/s3Client.js");
 const formidable = require('express-formidable');
 const jwt = require('jsonwebtoken');
 
-// Post a new project using FormData which will upload images to the AWS S3 bucket
+// Post a new project using FormData which will upload files to the AWS S3 bucket
 router.post("/", auth, formidable(), async (req, res) => {
-  const { name, date, description, youtube, spotify, link, groups, specialReaction, region, icon, position } = req.fields;
+  const { name, date, description, youtube, spotify, link, groups, specialReaction, region, icon, position, contentType } = req.fields;
   try {
     const newProject = new Project({
       name,
@@ -25,28 +25,31 @@ router.post("/", auth, formidable(), async (req, res) => {
       region,
       icon,
       position: position.split(','),
+      contentType,
       reactions: {},
       awards: {},
     });
     await newProject.validate();
 
-    const imageURLs = {
+    const fileURLs = {
       thumbnail: null,
       gallery: [],
+      content: [],
     };
-    const promises = Object.entries(req.files).map(async ([key, image]) => {
-      const imageName = await uploadToS3(image);
-      const imageURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${imageName}`;
-      if (key == "thumbnail") {
-        imageURLs.thumbnail = imageURL;
+    const promises = Object.entries(req.files).map(async ([key, file]) => {
+      const fileName = await uploadToS3(file, key);
+      const fileURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${fileName}`;
+      if (key == "thumbnail" || key == "content") {
+        fileURLs[key] = fileURL;
       } else if (key.startsWith("gallery")) {
-        imageURLs.gallery[key.split("gallery")[1]] = imageURL;
+        fileURLs.gallery[key.split("gallery")[1]] = fileURL;
       }
-      return imageURL;
+      return fileURL;
     });
     await Promise.all(promises);
-    newProject.thumbnail = imageURLs.thumbnail;
-    newProject.gallery = imageURLs.gallery;
+    newProject.thumbnail = fileURLs.thumbnail;
+    newProject.gallery = fileURLs.gallery;
+    newProject.content = fileURLs.content;
     newProject.save();
     res.status(201).json({Project: newProject});
   } catch (err) {
@@ -61,7 +64,7 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
   if (!project) res.status(404).json({error: "Requested project does not exist"});
   else {
     try {
-      const { deleteGallery, youtube, spotify, link, groups, position } = req.fields;
+      const { deleteGallery, deleteContent, youtube, spotify, link, groups, position } = req.fields;
       project.links = {
         youtube,
         spotify,
@@ -69,37 +72,50 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
       };
       project.groups = groups.split(",");
       project.position = position.split(",");
-      ["name", "date", "description", "specialReaction", "region", "icon"].forEach(field => {
+      ["name", "date", "description", "specialReaction", "region", "icon", "contentType"].forEach(field => {
         project[field] = req.fields[field];
       });
       await project.validate();
       if (deleteGallery != "") {
         for (const index of deleteGallery.split(",")) {
-          await deleteFromS3(project.gallery[index].split(process.env.S3_BUCKET + "/")[1]);
-          project.gallery.splice(index, 1);
+          if (project.gallery[index]) {
+            await deleteFromS3(project.gallery[index].split(process.env.S3_BUCKET + "/")[1]);
+            project.gallery.splice(index, 1);
+          }
         }
       }
-      const imageURLs = {
+      if (deleteContent == "true") {
+        if (project.content) {
+          await deleteFromS3(project.content.split(process.env.S3_BUCKET + "/")[1]);
+          project.content = null;
+        }
+      }
+      const fileURLs = {
         thumbnail: project.thumbnail,
         gallery: project.gallery,
+        content: project.content,
       };
-      const promises = Object.entries(req.files).map(async ([key, image]) => {
-        const imageName = await uploadToS3(image);
-        const imageURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${imageName}`;
+      const promises = Object.entries(req.files).map(async ([key, file]) => {
+        const fileName = await uploadToS3(file, key);
+        const fileURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${fileName}`;
         if (key == "thumbnail") {
           await deleteFromS3(project.thumbnail.split(process.env.S3_BUCKET + "/")[1]);
-          imageURLs.thumbnail = imageURL;
+          fileURLs.thumbnail = fileURL;
+        } else if (key == "content") {
+          if (project.content) await deleteFromS3(project.content.split(process.env.S3_BUCKET + "/")[1]);
+          fileURLs.content = fileURL;
         } else if (key.startsWith("gallery")) {
           if (project.gallery[key.split("gallery")[1]]) {
             await deleteFromS3(project.gallery[key.split("gallery")[1]].split(process.env.S3_BUCKET + "/")[1]);
           }
-          imageURLs.gallery[key.split("gallery")[1]] = imageURL;
+          fileURLs.gallery[key.split("gallery")[1]] = fileURL;
         }
-        return imageURL;
+        return fileURL;
       });
       await Promise.all(promises);
-      project.thumbnail = imageURLs.thumbnail;
-      project.gallery = imageURLs.gallery;
+      project.thumbnail = fileURLs.thumbnail;
+      project.gallery = fileURLs.gallery;
+      project.content = fileURLs.content;
       const updatedProject = project.save();
       res.status(200).json({updatedProject});
     } catch (err) {
@@ -113,8 +129,9 @@ router.delete("/one/:id", auth, async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
     await deleteFromS3(project.thumbnail.split(process.env.S3_BUCKET + "/")[1]);
-    for (const image of project.gallery) {
-      await deleteFromS3(image.split(process.env.S3_BUCKET + "/")[1]);
+    await deleteFromS3(project.content.split(process.env.S3_BUCKET + "/")[1]);
+    for (const file of project.gallery) {
+      await deleteFromS3(file.split(process.env.S3_BUCKET + "/")[1]);
     }
     if (!project) {
       res.status(404).json({error: "Project with that ID does not exist"});

@@ -15,18 +15,32 @@ const s3Client = new S3Client({
   }
 });
 
-const uploadToS3 = async (file) => {
+const uploadToS3 = async (file, key) => {
   try {
-    const compressedFile = await sharp(file.path).jpeg({quality: 75}).toBuffer();
-    const fileName = `${crypto.randomUUID()}.jpg`;
+    const fileType = await fileTypeFromFile(file.path);
+    let body;
+    let contentType;
+    let fileName;
+
+    if (fileType && fileType.mime.startsWith('image/')) {
+      body = (key == "content") ? createReadStream(file.path) : await sharp(file.path).jpeg({ quality: 75 }).toBuffer();
+      contentType = "image/jpeg";
+      fileName = `${crypto.randomUUID()}.jpg`;
+    } else {
+      // Upload as is for non-images
+      body = createReadStream(file.path);
+      contentType = fileType ? fileType.mime : "application/octet-stream";
+      const ext = path.extname(file.name);
+      fileName = `${crypto.randomUUID()}${ext}`;
+    }
 
     const upload = new Upload({
       client: s3Client,
       params: {
         Bucket: process.env.S3_BUCKET,
         Key: fileName,
-        Body: compressedFile,
-        ContentType: "image/jpeg",
+        Body: body,
+        ContentType: contentType,
       },
       queueSize: 10,
     });

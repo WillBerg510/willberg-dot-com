@@ -31,6 +31,12 @@ const project = new mongoose.Schema({
       type: String,
     },
   },
+  contentType: {
+    type: String,
+  },
+  content: {
+    type: String,
+  },
   groups: {
     type: Array,
     of: String,

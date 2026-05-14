@@ -8,12 +8,14 @@ import userAPI from "../api/UserAPI.js";
 import UpdatesBox from '../components/UpdatesBox.jsx';
 import Island from '../components/Island.jsx';
 import Project from '../components/Project.jsx';
+import Player from '../components/Player.jsx';
 import WillBergLogo from '../assets/WillBergLogo.png';
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   const [openProject, setOpenProject] = useState(null);
+  const [openPlayer, setOpenPlayer] = useState(null);
   const client = useQueryClient();
   const navigate = useNavigate();
 
@@ -91,6 +93,11 @@ function App() {
     navigate("/admin");
   };
 
+  const closeWindows = () => {
+    setOpenProject(null);
+    setOpenPlayer(null);
+  }
+
   return (
     <div id="app">
       {isAdmin &&
@@ -106,8 +113,9 @@ function App() {
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
         <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
       </div>}
-      {openProject && <div className="windowOnTop" onClick={() => setOpenProject(null)}>
-        <Project project_id={openProject} userRefresh={userRefresh} isAdmin={isAdmin} />
+      {(openProject || openPlayer) && <div className="windowOnTop" onClick={closeWindows}>
+        {openProject && <Project project_id={openProject} closeWindows={closeWindows} userRefresh={userRefresh} isAdmin={isAdmin} setOpenPlayer={setOpenPlayer} />}
+        {openPlayer && <Player project_id={openPlayer} />}
       </div>}
       <Island setOpenProject={setOpenProject} />
     </div>
