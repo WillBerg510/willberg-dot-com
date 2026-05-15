@@ -37,7 +37,11 @@ const projectsAPI = {
       } else if (key == "thumbnail") {
         if (value instanceof File) form.append(key, value);
       } else {
-        form.append(key, value);
+        if (Array.isArray(value)) {
+          form.append(key, JSON.stringify(value));
+        } else {
+          form.append(key, value);
+        }
       }
     });
     return await API.patch(`/projects/${project_id}`, form, {

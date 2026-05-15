@@ -38,6 +38,10 @@ const project = new mongoose.Schema({
     type: Array,
     of: String,
   },
+  contentNames: {
+    type: Array,
+    of: String,
+  },
   groups: {
     type: Array,
     of: String,

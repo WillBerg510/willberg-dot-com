@@ -24,6 +24,7 @@ const defaultProjectInput = {
   content: [],
   deleteGallery: [],
   deleteContent: [],
+  contentNames: [],
 };
 
 const defaultProjectFilePreviews = {
@@ -52,7 +53,7 @@ const AdminPanel = () => {
   const { mutate: getProjectToEdit } = useMutation({
     mutationFn: () => projectsAPI.getProjectInfo(editProject),
     onSuccess: async (res) => {
-      const { name, date, description, thumbnail, gallery, links, groups, specialReaction, region, icon, position, contentType, content } = res.data.project;
+      const { name, date, description, thumbnail, gallery, links, groups, specialReaction, region, icon, position, contentType, content, contentNames } = res.data.project;
       setProjectInput({
         name,
         date: new Date(date).toISOString().slice(0, 10),
@@ -69,6 +70,7 @@ const AdminPanel = () => {
         content,
         deleteGallery: [],
         deleteContent: [],
+        contentNames,
       });
       setProjectFilePreviews({
         thumbnail,
@@ -207,14 +209,18 @@ const AdminPanel = () => {
   }
 
   const addContentItem = (e) => {
-    setProjectInput(prev => prev.content ? {...prev, content: [...prev.content, null]} : {...prev, content: [null]});
-    setProjectFilePreviews(prev => prev.content ? {...prev, content: [...prev.content, null]} : {...prev, content: [null]})
+    setProjectInput(prev => prev.content ? {...prev, content: [...prev.content, null], contentNames: [...prev.contentNames, ""]} : {...prev, content: [null], contentNames: [""]});
+    setProjectFilePreviews(prev => prev.content ? {...prev, content: [...prev.content, null]} : {...prev, content: [null]});
   }
 
   const deleteContentItem = (e, index) => {
     setProjectFilePreviews({...projectFilePreviews, content: projectFilePreviews.content.filter((v, i) => i != index)});
-    setProjectInput({...projectInput, [e.target.name]: projectInput[e.target.name].filter((v, i) => i != index), deleteContent: [...projectInput.deleteContent, index]});
+    setProjectInput({...projectInput, content: projectInput.content.filter((v, i) => i != index), contentNames: projectInput.contentNames.filter((v, i) => i != index), deleteContent: [...projectInput.deleteContent, index]});
     if (projectInput.contentType != "gallery") projectContentRef.current.value = null;
+  }
+
+  const onContentNameChange = (e, index) => {
+    setProjectInput({...projectInput, contentNames: projectInput.contentNames.with(index, e.target.value)});
   }
 
   const onPositionChange = (e) => {
@@ -352,6 +358,7 @@ const AdminPanel = () => {
               {projectInput.content?.map((file, index) => 
                 <div key={`content${index}`}>
                   {projectFilePreviews.content[index] && <img height="100" src={projectFilePreviews.content[index]} />}<p />
+                  <input size="12" name="contentNames" id={`contentNames${index}`} type="text" value={projectInput.contentNames[index]} onChange={(e) => onContentNameChange(e, index)} />
                   <label htmlFor={`content${index}`} className="fileUpload">Upload Image</label>
                   <input name="content" id={`content${index}`} type="file" accept="image/*" multiple onChange={(e) => onMultipleContentUpload(e, index)} /><p />
                   <button name="content" onClick={(e) => deleteContentItem(e, index)}>Delete</button>

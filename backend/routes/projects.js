@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 
 // Post a new project using FormData which will upload files to the AWS S3 bucket
 router.post("/", auth, formidable(), async (req, res) => {
-  const { name, date, description, youtube, spotify, link, groups, specialReaction, region, icon, position, contentType } = req.fields;
+  const { name, date, description, youtube, spotify, link, groups, specialReaction, region, icon, position, contentType, contentNames } = req.fields;
   try {
     const newProject = new Project({
       name,
@@ -20,14 +20,15 @@ router.post("/", auth, formidable(), async (req, res) => {
         spotify,
         link,
       },
-      groups: groups.split(','),
+      groups: JSON.parse(groups),
       specialReaction,
       region,
       icon,
-      position: position.split(','),
+      position: JSON.parse(position),
       contentType,
       reactions: {},
       awards: {},
+      contentNames: JSON.parse(contentNames),
     });
     await newProject.validate();
 
@@ -66,20 +67,21 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
   if (!project) res.status(404).json({error: "Requested project does not exist"});
   else {
     try {
-      const { deleteGallery, deleteContent, youtube, spotify, link, groups, position } = req.fields;
+      const { deleteGallery, deleteContent, youtube, spotify, link, groups, position, contentNames } = req.fields;
       project.links = {
         youtube,
         spotify,
         link
       };
-      project.groups = groups.split(",");
-      project.position = position.split(",");
+      project.groups = JSON.parse(groups);
+      project.position = JSON.parse(position);
+      project.contentNames = JSON.parse(contentNames);
       ["name", "date", "description", "specialReaction", "region", "icon", "contentType"].forEach(field => {
         project[field] = req.fields[field];
       });
       await project.validate();
       if (deleteGallery != "") {
-        for (const index of deleteGallery.split(",")) {
+        for (const index of JSON.parse(deleteGallery)) {
           if (project.gallery[index]) {
             await deleteFromS3(project.gallery[index].split(process.env.S3_BUCKET + "/")[1]);
             project.gallery.splice(index, 1);
@@ -87,7 +89,7 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
         }
       }
       if (deleteContent != "") {
-        for (const index of deleteContent.split(",")) {
+        for (const index of JSON.parse(deleteContent)) {
           if (project.content[index]) {
             await deleteFromS3(project.content[index].split(process.env.S3_BUCKET + "/")[1]);
             project.content.splice(index, 1);
