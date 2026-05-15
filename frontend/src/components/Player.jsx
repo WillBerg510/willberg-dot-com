@@ -1,4 +1,4 @@
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { useState, useEffect } from "react";
 import projectsAPI from "../api/ProjectsAPI.js";
 
@@ -6,7 +6,16 @@ const Player = ({ project_id }) => {
   const [contentReady, setContentReady] = useState(0);
   const [galleryIndex, setGalleryIndex] = useState(0);
   const queryClient = useQueryClient();
-  const project = queryClient.getQueryData([`project-${project_id}`]);
+
+  const { data: project } = useQuery({
+    queryKey: [`project-${project_id}`],
+    queryFn: () => {
+      return projectsAPI.getProject(project_id).then(res => {
+        res.data.project.date = new Date(res.data.project.date);
+        return res.data.project;
+      });
+    }
+  });
 
   const onContentReady = () => {
     setContentReady(prev => prev + 1);

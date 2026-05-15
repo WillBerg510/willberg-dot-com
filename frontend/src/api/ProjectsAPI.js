@@ -12,6 +12,8 @@ const projectsAPI = {
         if (value) Object.entries(value).forEach(([linkType, link]) => {
           form.append(linkType, link);
         });
+      } if (Array.isArray(value)) {
+        form.append(key, JSON.stringify(value));
       } else {
         form.append(key, value);
       }
