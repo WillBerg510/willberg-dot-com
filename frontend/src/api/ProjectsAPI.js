@@ -57,6 +57,10 @@ const projectsAPI = {
     return await API.get(`/projects/region/${region}`);
   },
 
+  getFromGroup: async (group) => {
+    return await API.get(`/projects/group/${group}`);
+  },
+
   getProject: async (project_id) => {
     return await API.get(`/projects/${project_id}?requireUserToken=true`);
   },

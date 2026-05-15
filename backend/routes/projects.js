@@ -164,6 +164,18 @@ router.get("/region/:region", async (req, res) => {
   }
 });
 
+// Get all projects in a certain group
+router.get("/group/:group", async (req, res) => {
+  try {
+    const projects = await Project.find({groups: {$elemMatch: {$eq: req.params.group}}})
+    .select(["_id", "name", "thumbnail", "date", "icon"])
+    .sort({date: -1});
+    res.status(200).json({projects});
+  } catch (err) {
+    res.status(500).json({error: err.message});
+  }
+});
+
 // Get a project's information by its ID
 router.get("/:id", async (req, res) => {
   const user_token = req.cookies?.user_auth_token;

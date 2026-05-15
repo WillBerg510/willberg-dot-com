@@ -5,10 +5,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import adminAPI from "../api/AdminAPI.js";
 import userAPI from "../api/UserAPI.js";
+import projectsAPI from '../api/ProjectsAPI.js';
 import UpdatesBox from '../components/UpdatesBox.jsx';
 import Island from '../components/Island.jsx';
 import Project from '../components/Project.jsx';
 import Player from '../components/Player.jsx';
+import GroupMenu from '../components/GroupMenu.jsx';
+import GroupList from '../components/GroupList.jsx';
 import WillBergLogo from '../assets/WillBergLogo.png';
 
 function App() {
@@ -76,6 +79,14 @@ function App() {
     onSuccess: () => setIsAdmin(false),
   });
 
+  const { data: groupProjects, isPending: gettingProjects, mutate: getGroupProjects } = useMutation({
+    mutationFn: (group) => projectsAPI.getFromGroup(group)
+      .then(res => res?.data?.projects?.map(project => ({
+        ...project,
+        date: new Date(project.date),
+      }))),
+  });
+
   const toggleSeeMore = async () => {
     client.invalidateQueries(["updates"]);
     if (allUpdatesOpen) {
@@ -113,11 +124,13 @@ function App() {
       {allUpdatesOpen && <div className="windowOnTop" onClick={toggleSeeMore}>
         <UpdatesBox allUpdatesOpen={allUpdatesOpen} isAdmin={isAdmin} full={true} toggleSeeMore={toggleSeeMore} userVerifyFailed={userVerifyFailed} userRefresh={userRefresh} />
       </div>}
+      <GroupMenu getGroupProjects={getGroupProjects} />
+      {groupProjects && <GroupList groupProjects={groupProjects} setOpenProject={setOpenProject} />}
       {(openProject || openPlayer) && <div className="windowOnTop" onClick={closeWindows}>
         {openProject && <Project project_id={openProject} closeWindows={closeWindows} userRefresh={userRefresh} isAdmin={isAdmin} setOpenPlayer={setOpenPlayer} />}
         {openPlayer && <Player project_id={openPlayer} />}
       </div>}
-      <Island setOpenProject={setOpenProject} />
+      {((!groupProjects || groupProjects.length == 0) && !gettingProjects) && <Island setOpenProject={setOpenProject} />}
     </div>
   )
 }
