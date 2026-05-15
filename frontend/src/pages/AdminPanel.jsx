@@ -21,15 +21,15 @@ const defaultProjectInput = {
   icon: "",
   position: [0, 0],
   contentType: "",
-  content: null,
+  content: [],
   deleteGallery: [],
-  deleteContent: false,
+  deleteContent: [],
 };
 
 const defaultProjectFilePreviews = {
   thumbnail: null,
   gallery: [],
-  content: null,
+  content: [],
 };
 
 const AdminPanel = () => {
@@ -68,7 +68,7 @@ const AdminPanel = () => {
         contentType,
         content,
         deleteGallery: [],
-        deleteContent: false,
+        deleteContent: [],
       });
       setProjectFilePreviews({
         thumbnail,
@@ -89,7 +89,7 @@ const AdminPanel = () => {
       setProjectInput(defaultProjectInput);
       setProjectFilePreviews(defaultProjectFilePreviews);
       projectThumbnailRef.current.value = null;
-      projectContentRef.current.value = null;
+      if (projectContentRef.current) projectContentRef.current.value = null;
     },
   });
 
@@ -147,16 +147,35 @@ const AdminPanel = () => {
     let file = e.target.files[0];
     if (!file) file = null;
     setProjectInput({...projectInput, gallery: projectInput.gallery.with(index, file)});
-    const galleryPreviews = projectFilePreviews.gallery;
+    const galleryPreviews = projectFilePreviews.gallery || [];
     galleryPreviews[index] = file ? URL.createObjectURL(file) : null;
     setProjectFilePreviews({...projectFilePreviews, gallery: galleryPreviews});
   }
 
-  const onContentUpload = (e) => {
+  const onContentUpload = (e, index, contentPreviews) => {
     let file = e.target.files[0];
     if (!file) file = null;
-    setProjectInput({...projectInput, [e.target.name]: file});
-    setProjectFilePreviews({...projectFilePreviews, content: file ? URL.createObjectURL(file) : null});
+    setProjectInput(prev => {return {...prev, content: prev.content.length > 0 ? prev.content.with(index, file) : [file]}});
+    if (!contentPreviews) contentPreviews = projectFilePreviews.content || [];
+    contentPreviews[index] = file ? URL.createObjectURL(file) : null;
+    setProjectFilePreviews({...projectFilePreviews, content: contentPreviews});
+    return contentPreviews;
+  }
+
+  const onMultipleContentUpload = (e, index) => {
+    if (e.target.files.length > 1) {
+      let contentPreviews = projectFilePreviews.content || [];
+      Object.entries(e.target.files).forEach(([i, file]) => {
+        if (i == 0) {
+          contentPreviews = onContentUpload(e, index);
+        } else {
+          addContentItem(e);
+          contentPreviews = onContentUpload({target: {files: [file]}}, index + parseInt(i), contentPreviews);
+        }
+      });
+    } else {
+      onContentUpload(e, index);
+    }
   }
 
   const onArrayProjectChange = (e, index) => {
@@ -187,10 +206,15 @@ const AdminPanel = () => {
     setProjectInput({...projectInput, [e.target.name]: projectInput[e.target.name].filter((v, i) => i != index), deleteGallery: [...projectInput.deleteGallery, index]});
   }
 
-  const doDeleteContent = () => {
-    setProjectFilePreviews({...projectFilePreviews, content: null});
-    setProjectInput({...projectInput, content: null, deleteContent: true});
-    projectContentRef.current.value = null;
+  const addContentItem = (e) => {
+    setProjectInput(prev => prev.content ? {...prev, content: [...prev.content, null]} : {...prev, content: [null]});
+    setProjectFilePreviews(prev => prev.content ? {...prev, content: [...prev.content, null]} : {...prev, content: [null]})
+  }
+
+  const deleteContentItem = (e, index) => {
+    setProjectFilePreviews({...projectFilePreviews, content: projectFilePreviews.content.filter((v, i) => i != index)});
+    setProjectInput({...projectInput, [e.target.name]: projectInput[e.target.name].filter((v, i) => i != index), deleteContent: [...projectInput.deleteContent, index]});
+    if (projectInput.contentType != "gallery") projectContentRef.current.value = null;
   }
 
   const onPositionChange = (e) => {
@@ -310,18 +334,32 @@ const AdminPanel = () => {
               <option value="audio">Audio</option>
               <option value="image">Image</option>
               <option value="video">Video</option>
+              <option value="gallery">Gallery</option>
             </select>
             <p>Content</p>
-            {projectFilePreviews.content && (
-              projectInput.contentType == "image" ? <img height="200" src={projectFilePreviews.content} />
-              : projectInput.contentType == "audio" ? <audio controls src={projectFilePreviews.content} />
-              : projectInput.contentType == "video" ? <video controls height="200" src={projectFilePreviews.content} />
-              : null
-            )}
-            {projectFilePreviews.content && <button onClick={doDeleteContent}>Delete</button>}
-            <p />
-            <label htmlFor="content" className="fileUpload">Upload Content</label>
-            <input name="content" id="content" type="file" ref={projectContentRef} onChange={onContentUpload} />
+            {projectInput.contentType != "gallery" ? <>
+              {projectFilePreviews.content?.length > 0 && (
+                projectInput.contentType == "image" ? <img height="200" src={projectFilePreviews.content[0]} />
+                : projectInput.contentType == "audio" ? <audio controls src={projectFilePreviews.content[0]} />
+                : projectInput.contentType == "video" ? <video controls height="200" src={projectFilePreviews.content[0]} />
+                : null
+              )}
+              {projectFilePreviews.content?.length > 0 && <button name="content" onClick={(e) => deleteContentItem(e, 0)}>Delete</button>}
+              <p />
+              <label htmlFor="content" className="fileUpload">Upload Content</label>
+              <input name="content" id="content" type="file" ref={projectContentRef} onChange={(e) => onContentUpload(e, 0)} />
+            </> : <div style={{display: "grid", gridTemplateColumns: `repeat(${Math.min(12, projectInput.content?.length + 1 || 1)}, 1fr)`, justifyContent: "center", alignItems: "center"}}>
+              {projectInput.content?.map((file, index) => 
+                <div key={`content${index}`}>
+                  {projectFilePreviews.content[index] && <img height="100" src={projectFilePreviews.content[index]} />}<p />
+                  <label htmlFor={`content${index}`} className="fileUpload">Upload Image</label>
+                  <input name="content" id={`content${index}`} type="file" accept="image/*" multiple onChange={(e) => onMultipleContentUpload(e, index)} /><p />
+                  <button name="content" onClick={(e) => deleteContentItem(e, index)}>Delete</button>
+                </div>
+              )}
+              <button onClick={addContentItem} style={{width: "50px", height: "50px", fontSize: "16px"}} name="content">Add</button>
+            </div>
+            }
             <p />
             {(projectPostLoading || projectEditLoading) && <p>Uploading project...</p>}
             {(projectPosted || projectEdited) && <p>Project successfully uploaded</p>}

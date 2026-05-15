@@ -153,8 +153,8 @@ const Project = (props) => {
               </button>
             )}
             <button
-              disabled={!project.content}
-              className={`projectLink projectLink${project.content ? "Active" : "Inactive"}`}
+              disabled={!project.content || project.content.length == 0}
+              className={`projectLink projectLink${project.content && project.content.length > 0 ? "Active" : "Inactive"}`}
               onClick={onPlayerOpen}
             >
               {project.icon == "photos" || project.icon == "art" ? "VIEW" : "PLAY"}

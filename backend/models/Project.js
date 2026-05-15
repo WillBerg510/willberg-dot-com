@@ -35,7 +35,8 @@ const project = new mongoose.Schema({
     type: String,
   },
   content: {
-    type: String,
+    type: Array,
+    of: String,
   },
   groups: {
     type: Array,

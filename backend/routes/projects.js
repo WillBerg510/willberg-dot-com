@@ -39,10 +39,12 @@ router.post("/", auth, formidable(), async (req, res) => {
     const promises = Object.entries(req.files).map(async ([key, file]) => {
       const fileName = await uploadToS3(file, key);
       const fileURL = `https://s3.us-east-1.amazonaws.com/${process.env.S3_BUCKET}/${fileName}`;
-      if (key == "thumbnail" || key == "content") {
+      if (key == "thumbnail") {
         fileURLs[key] = fileURL;
       } else if (key.startsWith("gallery")) {
         fileURLs.gallery[key.split("gallery")[1]] = fileURL;
+      } else if (key.startsWith("content")) {
+        fileURLs.content[key.split("content")[1]] = fileURL;
       }
       return fileURL;
     });
@@ -84,10 +86,12 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
           }
         }
       }
-      if (deleteContent == "true") {
-        if (project.content) {
-          await deleteFromS3(project.content.split(process.env.S3_BUCKET + "/")[1]);
-          project.content = null;
+      if (deleteContent != "") {
+        for (const index of deleteContent.split(",")) {
+          if (project.content[index]) {
+            await deleteFromS3(project.content[index].split(process.env.S3_BUCKET + "/")[1]);
+            project.content.splice(index, 1);
+          }
         }
       }
       const fileURLs = {
@@ -101,9 +105,11 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
         if (key == "thumbnail") {
           await deleteFromS3(project.thumbnail.split(process.env.S3_BUCKET + "/")[1]);
           fileURLs.thumbnail = fileURL;
-        } else if (key == "content") {
-          if (project.content) await deleteFromS3(project.content.split(process.env.S3_BUCKET + "/")[1]);
-          fileURLs.content = fileURL;
+        } else if (key.startsWith("content")) {
+          if (project.content[key.split("content")[1]]) {
+            await deleteFromS3(project.content[key.split("content")[1]].split(process.env.S3_BUCKET + "/")[1]);
+          }
+          fileURLs.content[key.split("content")[1]] = fileURL;
         } else if (key.startsWith("gallery")) {
           if (project.gallery[key.split("gallery")[1]]) {
             await deleteFromS3(project.gallery[key.split("gallery")[1]].split(process.env.S3_BUCKET + "/")[1]);
@@ -129,8 +135,10 @@ router.delete("/one/:id", auth, async (req, res) => {
   try {
     const project = await Project.findByIdAndDelete(req.params.id);
     await deleteFromS3(project.thumbnail.split(process.env.S3_BUCKET + "/")[1]);
-    await deleteFromS3(project.content.split(process.env.S3_BUCKET + "/")[1]);
     for (const file of project.gallery) {
+      await deleteFromS3(file.split(process.env.S3_BUCKET + "/")[1]);
+    }
+    for (const file of project.content) {
       await deleteFromS3(file.split(process.env.S3_BUCKET + "/")[1]);
     }
     if (!project) {

@@ -4,9 +4,9 @@ const projectsAPI = {
   postProject: async (projectInput) => {
     const form = new FormData();
     Object.entries(projectInput).forEach(([key, value]) => {
-      if (key == "gallery") {
-        value.forEach((image, index) => {
-          form.append(`gallery${index}`, image);
+      if (key == "gallery" || key == "content") {
+        value?.forEach((image, index) => {
+          form.append(`${key}${index}`, image);
         })
       } else if (key == "links") {
         if (value) Object.entries(value).forEach(([linkType, link]) => {
@@ -26,15 +26,15 @@ const projectsAPI = {
   editProject: async (project_id, projectInput) => {
     const form = new FormData();
     Object.entries(projectInput).forEach(([key, value]) => {
-      if (key == "gallery") {
-        value.forEach((image, index) => {
-          if (image instanceof File) form.append(`gallery${index}`, image);
+      if (key == "gallery" || key == "content") {
+        value?.forEach((image, index) => {
+          if (image instanceof File) form.append(`${key}${index}`, image);
         })
       } else if (key == "links") {
         if (value) Object.entries(value).forEach(([linkType, link]) => {
           form.append(linkType, link);
         });
-      } else if (key == "thumbnail" || key == "content") {
+      } else if (key == "thumbnail") {
         if (value instanceof File) form.append(key, value);
       } else {
         form.append(key, value);
