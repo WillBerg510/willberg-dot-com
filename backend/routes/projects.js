@@ -20,7 +20,7 @@ router.post("/", auth, formidable(), async (req, res) => {
         spotify,
         link,
       },
-      groups: JSON.parse(groups),
+      groups: (groups != "undefined" ? JSON.parse(groups) : null),
       specialReaction,
       region,
       icon,
@@ -28,7 +28,7 @@ router.post("/", auth, formidable(), async (req, res) => {
       contentType,
       reactions: {},
       awards: {},
-      contentNames: JSON.parse(contentNames),
+      contentNames: (contentNames != "undefined" ? JSON.parse(contentNames) : null),
     });
     await newProject.validate();
 
@@ -71,11 +71,11 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
       project.links = {
         youtube,
         spotify,
-        link
+        link,
       };
-      project.groups = JSON.parse(groups);
+      if (groups != "undefined") project.groups = JSON.parse(groups);
       project.position = JSON.parse(position);
-      project.contentNames = JSON.parse(contentNames);
+      if (contentNames != "undefined") project.contentNames = JSON.parse(contentNames);
       ["name", "date", "description", "specialReaction", "region", "icon", "contentType"].forEach(field => {
         project[field] = req.fields[field];
       });

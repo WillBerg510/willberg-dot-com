@@ -34,7 +34,7 @@ const projectsAPI = {
         })
       } else if (key == "links") {
         if (value) Object.entries(value).forEach(([linkType, link]) => {
-          form.append(linkType, link);
+          if (link != "") form.append(linkType, link);
         });
       } else if (key == "thumbnail") {
         if (value instanceof File) form.append(key, value);
