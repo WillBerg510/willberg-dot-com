@@ -9,6 +9,7 @@ const projectGroups = {
   teamProjects: "Team Projects",
   originals: "Original Songs",
   lunacyToday: "Lunacy Today",
+  covers2025: "2025 Covers",
   december: "December",
   profilePics: "Profile Pics",
   favorites: "Will's Favorites",
