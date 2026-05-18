@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import MusicIcon from '../assets/Music Icon.png';
-import InteractiveIcon from '../assets/Interactive Icon.png';
-import VideoIcon from '../assets/Video Icon.png';
-import ArtIcon from '../assets/Art Icon.png';
-import PhotosIcon from '../assets/Photos Icon.png';
+import MusicIcon from '../assets/Music Map Icon.png';
+import InteractiveIcon from '../assets/Interactive Map Icon.png';
+import VideoIcon from '../assets/Video Map Icon.png';
+import ArtIcon from '../assets/Art Map Icon.png';
+import PhotosIcon from '../assets/Photos Map Icon.png';
 
 const icons = {
   "music": MusicIcon,

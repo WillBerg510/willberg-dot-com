@@ -299,7 +299,7 @@ const AdminPanel = () => {
                   <select name="groups" style={{width: "140px"}} value={projectInput.groups[index]} type="text" onChange={e => onArrayProjectChange(e, index)}>
                     <option value=""></option>
                     {Object.entries(projectGroups).filter(([key, value]) => key == projectInput.groups[index] || !projectInput.groups.includes(key)).map(([key, value]) =>
-                      <option value={key} >{value}</option>
+                      <option key={key} value={key} >{value.name}</option>
                     )}
                   </select><p />
                   <button name="groups" onClick={(e) => deleteInputItem(e, index)}>Delete</button>
