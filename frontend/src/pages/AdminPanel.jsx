@@ -149,7 +149,7 @@ const AdminPanel = () => {
     let file = e.target.files[0];
     if (!file) file = null;
     setProjectInput({...projectInput, gallery: projectInput.gallery.with(index, file)});
-    const galleryPreviews = projectFilePreviews.gallery || [];
+    const galleryPreviews = [...projectFilePreviews.gallery] || [];
     galleryPreviews[index] = file ? URL.createObjectURL(file) : null;
     setProjectFilePreviews({...projectFilePreviews, gallery: galleryPreviews});
   }
@@ -158,15 +158,17 @@ const AdminPanel = () => {
     let file = e.target.files[0];
     if (!file) file = null;
     setProjectInput(prev => {return {...prev, content: prev.content.length > 0 ? prev.content.with(index, file) : [file]}});
-    if (!contentPreviews) contentPreviews = projectFilePreviews.content || [];
-    contentPreviews[index] = file ? URL.createObjectURL(file) : null;
-    setProjectFilePreviews({...projectFilePreviews, content: contentPreviews});
+    setProjectFilePreviews(prev => {
+      if (!contentPreviews) contentPreviews = [...prev.content] || [];
+      contentPreviews[index] = file ? URL.createObjectURL(file) : null;
+      return {...prev, content: contentPreviews};
+    });
     return contentPreviews;
   }
 
   const onMultipleContentUpload = (e, index) => {
     if (e.target.files.length > 1) {
-      let contentPreviews = projectFilePreviews.content || [];
+      let contentPreviews = [...projectFilePreviews.content] || [];
       Object.entries(e.target.files).forEach(([i, file]) => {
         if (i == 0) {
           contentPreviews = onContentUpload(e, index);

@@ -53,7 +53,7 @@ router.post("/", auth, formidable(), async (req, res) => {
     newProject.thumbnail = fileURLs.thumbnail;
     newProject.gallery = fileURLs.gallery;
     newProject.content = fileURLs.content;
-    newProject.save();
+    await newProject.save();
     res.status(201).json({Project: newProject});
   } catch (err) {
     console.log(err);
@@ -124,7 +124,7 @@ router.patch("/:id", auth, formidable(), async (req, res) => {
       project.thumbnail = fileURLs.thumbnail;
       project.gallery = fileURLs.gallery;
       project.content = fileURLs.content;
-      const updatedProject = project.save();
+      const updatedProject = await project.save();
       res.status(200).json({updatedProject});
     } catch (err) {
       res.status(500).json({error: err});

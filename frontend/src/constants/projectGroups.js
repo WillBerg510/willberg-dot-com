@@ -57,7 +57,7 @@ const projectGroups = {
   },
   favorites: {
     name: "Will's Favorites",
-    icon: ArtIcon,
+    icon: ProgramsIcon,
   },
 }
 
