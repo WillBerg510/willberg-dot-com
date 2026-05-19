@@ -1,6 +1,8 @@
 import MusicIcon from "../assets/Music Group.png";
 import ProgramsIcon from "../assets/Programs Group.png";
 import ArtIcon from "../assets/Art Group.png";
+import PhotosIcon from "../assets/Photos Group.png";
+import VideosIcon from "../assets/Videos Group.png";
 
 const projectGroups = {
   music: {
@@ -17,11 +19,11 @@ const projectGroups = {
   },
   photos: {
     name: "Photos",
-    icon: ProgramsIcon,
+    icon: PhotosIcon,
   },
   videos: {
     name: "Videos",
-    icon: ProgramsIcon,
+    icon: VideosIcon,
   },
   cartoons: {
     name: "Cartoons",
@@ -41,7 +43,7 @@ const projectGroups = {
   },
   lunacyToday: {
     name: "Lunacy Today",
-    icon: ArtIcon,
+    icon: VideosIcon,
   },
   covers2025: {
     name: "2025 Covers",
@@ -57,7 +59,7 @@ const projectGroups = {
   },
   favorites: {
     name: "Will's Favorites",
-    icon: ProgramsIcon,
+    icon: PhotosIcon,
   },
 }
 
