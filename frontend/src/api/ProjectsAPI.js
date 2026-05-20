@@ -84,6 +84,10 @@ const projectsAPI = {
   deleteProject: async (project_id) => {
     return await API.delete(`/projects/one/${project_id}`);
   },
+
+  getRace: async (level) => {
+    return await API.get(`/projects/race/${level}`);
+  },
 };
 
 export default projectsAPI;

@@ -14,11 +14,18 @@ import GroupMenu from '../components/GroupMenu.jsx';
 import GroupList from '../components/GroupList.jsx';
 import WillBergLogo from '../assets/WillBergLogo.png';
 
+const levels = {
+  "Easy": 3,
+  "Medium": 4,
+  "Hard": 5,
+};
+
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [allUpdatesOpen, setAllUpdatesOpen] = useState(false);
   const [openProject, setOpenProject] = useState(null);
   const [openPlayer, setOpenPlayer] = useState(null);
+  const [racesData, setRacesData] = useState({});
   const client = useQueryClient();
   const navigate = useNavigate();
 
@@ -87,6 +94,14 @@ function App() {
       }))),
   });
 
+  const { mutate: getRace } = useMutation({
+    mutationFn: (level) => projectsAPI.getRace(levels[level]),
+    onSuccess: (res, level) => {
+      const projects = res?.data?.projects;
+      setRacesData(prev => ({...prev, [level]: projects}));
+    },
+  });
+
   const toggleSeeMore = async () => {
     client.invalidateQueries(["updates"]);
     if (allUpdatesOpen) {
@@ -131,6 +146,22 @@ function App() {
         {openPlayer && <Player project_id={openPlayer} />}
       </div>}
       {((!groupProjects || groupProjects.length == 0) && !gettingProjects) && <Island setOpenProject={setOpenProject} />}
+      <div style={{display: "flex", gap: "10px", justifyContent: "center", margin: "20px 0"}}>
+        {Object.keys(levels).map(level => <button onClick={() => getRace(level)}>{level} Race</button>)}
+      </div>
+      <div style={{display: "flex", gap: "30px", justifyContent: "center", flexWrap: "wrap", margin: "20px 0"}}>
+        {Object.keys(levels).map(level => 
+          racesData[level] && (
+          <div style={{border: "1px solid #ccc", padding: "10px", borderRadius: "5px"}}>
+            <h3>{level} Race Projects</h3>
+            <ul>
+              {racesData[level].map((project) => (
+                <li key={project._id}>{project.name}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

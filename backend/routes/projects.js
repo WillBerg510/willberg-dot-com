@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const Project = require("../models/Project.js");
+const Race = require("../models/Race.js");
 const auth = require("../utils/auth.js");
 const { uploadToS3, deleteFromS3 } = require("../utils/s3Client.js");
 const formidable = require('express-formidable');
 const jwt = require('jsonwebtoken');
+const lodash = require('lodash');
 
 // Post a new project using FormData which will upload files to the AWS S3 bucket
 router.post("/", auth, formidable(), async (req, res) => {
@@ -243,6 +245,39 @@ router.patch("/unreact/:id", async (req, res) => {
     }
   } else {
     res.status(500).json({error: "Error reacting"});
+  }
+});
+
+// Get project IDs and names for today's race of a certain level (as the number of projects), requesting a new race if the race is outdated 
+router.get("/race/:level", async (req, res) => {
+  try {
+    const race = await Race.findOne({level: req.params.level});
+    if (!race) {
+      res.status(404).json({error: `Race of level ${req.params.level} does not exist`});
+    } else {
+      const today = new Date((new Date()).getTime() - (7 * 60 * 60 * 1000));
+      const todayDate = today.toISOString().split('T')[0];
+      if (race.date.toISOString().split('T')[0] != todayDate) {
+        const projects = await Project.find().select(["_id", "name"]);
+        const usedProjectIds = (await Race.find()).filter(otherRace => otherRace.date.toISOString().split('T')[0] == todayDate)
+          .flatMap(otherRace => otherRace.projects);
+        const selection = lodash.sampleSize(projects.filter(project => !usedProjectIds.includes(project._id.toString())), race.level);
+        const selectionIds = selection.map(project => project._id);
+        race.date = today;
+        race.projects = selectionIds;
+        await race.save();
+        res.status(200).json({projects: selection});
+      } else {
+        let projects = [];
+        const promises = race.projects.map(async (projectId) => {
+          projects.push(await Project.findOne({_id: projectId}).select(["_id", "name"]));
+        });
+        await Promise.all(promises);
+        res.status(200).json({projects});
+      }
+    }
+  } catch (err) {
+    res.status(500).json({error: err.message});
   }
 });
 
