@@ -269,8 +269,8 @@ router.get("/race/:level", async (req, res) => {
         res.status(200).json({projects: selection});
       } else {
         let projects = [];
-        const promises = race.projects.map(async (projectId) => {
-          projects.push(await Project.findOne({_id: projectId}).select(["_id", "name"]));
+        const promises = race.projects.map(async (projectId, index) => {
+          projects[index] = await Project.findOne({_id: projectId}).select(["_id", "name"]);
         });
         await Promise.all(promises);
         res.status(200).json({projects});

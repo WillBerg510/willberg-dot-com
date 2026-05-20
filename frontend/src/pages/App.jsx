@@ -156,7 +156,7 @@ function App() {
             <h3>{level} Race Projects</h3>
             <ul>
               {racesData[level].map((project) => (
-                <li key={project._id}>{project.name}</li>
+                <li style={{textAlign: "left"}} key={project._id}>{project.name}</li>
               ))}
             </ul>
           </div>
